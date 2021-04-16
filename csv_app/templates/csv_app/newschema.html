@@ -1,0 +1,55 @@
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<form action="{% url 'newschema' %}" method="POST">
+  {% csrf_token %}
+  <button type="submit">Submit</button>
+  {{form.as_p}}
+  <hr>
+  <div id=2>{{form1}}</div>
+  <hr>
+  <div id=2>{{form2}}</div>
+  <hr>
+  <div id=2>{{form3}}</div>
+  <hr>
+  <div id=2>{{form4}}</div>
+
+</form>
+<button onclick="add_p()">Add row</button>
+<script type="text/javascript">
+  function add_p() {
+    // body...
+    let form = document.getElementsByTagName('form')
+    console.log(`hello world form = ${form}`)
+    console.log(`length form = ${form.length}`)
+    console.log(`item 0 form = ${form.item(0)}`)
+    // console.log(`hello world form = ${form}`)
+    let p = document.createElement('p')
+    p.innerHTML = '<label for="id_name">Name11:</label><input type="text" name="name1" value="None" maxlength="30" required="" id="id_name">'
+    console.log(`hello world p = ${p}`)
+    console.log(`attrs form ${form.item(0).length}`)
+    form.item(0).appendChild(p)
+    
+  }
+  function mypostdata() {
+    alert('we are in POST')
+    // body...
+    let xhr = new XMLHttpRequest();
+    let js = JSON.stringify(
+    {
+      name: "Vasya",
+      age: 222
+    }
+    );
+  xhr.open('POST', {% url "newschema" %})
+  xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+   xhr.send(js)
+  }
+</script>
+</body>
+</html>
+
+
+

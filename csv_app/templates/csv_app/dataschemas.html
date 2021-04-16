@@ -1,0 +1,54 @@
+{% extends './base.html' %}
+
+{% block title%}
+  <title>Data schemas</title>
+{% endblock %}
+<!-- PAGE-NAME -->
+
+{% block content %}
+<div class="container">
+
+  <div class="row mb-2">
+    <div class="col-3">
+      <h4>Data Schemas</h4>
+    </div>
+    <div class="col-7">
+      
+    </div>
+    <div class="col-2">
+      <button class="btn btn-success ">New schema</button>
+    </div>
+  </div>
+<!-- TABLE -->
+<!-- <div class="row"> -->
+<table class="table table-bordered ">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Title</th>
+      <th scope="col">Modefired</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if schemas %}
+    {% for schema in schemas %}
+    <tr>
+      <th scope="row">{{ forloop.counter }}</th>
+      <td><a href="">{{ schema.name }}</a></td>
+      <td>{{ schema.modifired }}</td>
+      <td><a href="#">Edit scheme</a><a class="ml-4 text-danger" href="#">Delete</a></td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr>
+      <th scope="row">No data</th>
+      <td>No data</td>
+      <td>No data</td>
+      <td>No data</td>
+    </tr>
+    {% endif %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
