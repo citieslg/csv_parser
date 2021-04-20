@@ -47,11 +47,11 @@ const SCORE_COMPAIR_CHOICES_OBJ = {
 //col class for name input
 const SCORE_STYLE_TITLE = "margin-top: 40px;"
 //with cols home
-const SCORE_NAME_INPUT_HOME = "score_name_home"
-const SCORE_ID_INPUT_HOME = "id_score_home"
+const SCORE_NAME_INPUT_HOME = "score_name_home_"
+const SCORE_ID_INPUT_HOME = "id_score_home_"
 //with cols guest
-const SCORE_NAME_INPUT_GUEST = "score_name_guest"
-const SCORE_ID_INPUT_GUEST = "id_score_guest"
+const SCORE_NAME_INPUT_GUEST = "score_name_guest_"
+const SCORE_ID_INPUT_GUEST = "id_score_guest_"
 
 //ROW TIME
 //col name
@@ -115,13 +115,14 @@ const CLASS_INPUT = "form-control"
 const CLASS_SELECT = "form-control custom-select"
 const CLASS_COL_MD_1 = "form-group col-md-1 mb-0"
 const CLASS_COL_MD_2 = "form-group col-md-2 mb-0"
+const CLASS_COL_MD_5 = "form-group col-md-5 mb-0"
 const CLASS_DELETE = "text-danger control mt-5"
 
 // CONSTS ETC
 const NAME_FORM_SUMBMIT = "form_submit"
 const TIME_NAME_OBJ = {
-	"n" : "events now",
-	"t" : "events"
+	"n" : "events now from",
+	"t" : "events from"
 }
 const TIME_MIN_MAX = {
 	"t" : {
@@ -134,11 +135,12 @@ const TIME_MIN_MAX = {
 	}
 }
 const SCORE_NAME_OBJ = {
-	"total":"common total",
-	"home":"team home",
-	"guest":"team guest",
-	"compairson":"set patameters",
+	"t":"common total ",
+	"h":"team home ",
+	"g":"team guest ",
+	"c":"where ",
 }
+
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -146,7 +148,7 @@ const SCORE_NAME_OBJ = {
 // onload
 ///////////////////////////////////////////////////////////////////////////////
 function setDefaultState() {
-	//selected all matches state!!!
+	//on load function makes selected all matches state!!!
 	let select = document.getElementById(STATE_SELECT_ID)
 	select.options[0].selected=true
 	manageAddFormByStateRow()
@@ -193,7 +195,6 @@ function Score(logicoperator, parentorder) {
 	this.valguest = null
 }
 
-
 function RowManager(row, rowobj, logicoperator) {
 	this.row = row
 	this.rowobj = rowobj
@@ -210,7 +211,6 @@ function RowManager(row, rowobj, logicoperator) {
 // console.log(t2.order)
 // let t3 = new Row(logicoperator = "or", parentorder = "1_1")
 // console.log(t3.order)
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //Rows obj with Order manager
@@ -326,12 +326,14 @@ function createTimeRangeBlock(typeinput, order) {
 		{
 			"label": "From:",
 			"name": TIME_NAME_FROM,
-			"id" : TIME_ID_FROM
+			"id" : TIME_ID_FROM,
+			"value": (typeinput === "number") ? "0" : "00:00"
 		}, 
 		{
 			"label": "To:",
 			"name": TIME_NAME_TO,
-			"id" : TIME_ID_TO
+			"id" : TIME_ID_TO,
+			"value": (typeinput === "number") ? "130" : "23:59"
 		}
 	]
 	for (let i = 0; i < rangeValues.length; i++) {
@@ -346,6 +348,7 @@ function createTimeRangeBlock(typeinput, order) {
 			"id": rangeValues[i]["id"] + order,
 			"type": typeinput, 
 			"name": rangeValues[i]["name"] + order,
+			"value": rangeValues[i]["value"],
 			"onchange": `onChangeTime("${rangeValues[i]["label"].toLowerCase()}","${order}")`
 		}
 		//define type for input widget in time row
@@ -384,7 +387,9 @@ function createScorerow(order) {
 		"max": 20,
 		"required": "",
 		"type": "number",
-		"class": CLASS_INPUT
+		"class": CLASS_INPUT,
+		"value": 0,
+		"onchange" : `onChangeScore("score", ${order})`
 	}
 	let scoreinput = createTagWithAttrs("input", inputAttrs)
 	divInput = appendAllChild(divInput, labelinput, scoreinput)
@@ -414,7 +419,6 @@ function manageAddFormByStateRow() {
 	}
 }
 
-
 function onChangeTime(type, order) {
 	let timename = document.getElementById(TIME_ID+order)
 	let timetype = document.getElementById(TIME_ID_SELECT_STSTUS+order)
@@ -426,40 +430,182 @@ function onChangeTime(type, order) {
 		//define default min and max values
 		timefrom.min = TIME_MIN_MAX[timetype.value].min
 		timefrom.max = TIME_MIN_MAX[timetype.value].max
+		timefrom.value = TIME_MIN_MAX[timetype.value].min
 		timeto.min = TIME_MIN_MAX[timetype.value].min
 		timeto.max = TIME_MIN_MAX[timetype.value].max
+		timeto.value = TIME_MIN_MAX[timetype.value].max
 		// (timeto.min, timeto.max) = (TIME_MIN_MAX[timetype.value].min, TIME_MIN_MAX[timetype.value].max)
 	} else if (type == "from:") {
 		timeto.min = (timetype.value === "t") ? setTime(timefrom.value,"+") : +timefrom.value + 1
 	} else if (type == "to:") {
 		timefrom.max = (timetype.value === "t") ? setTime(timeto.value,"-") : +timeto.value - 1
 	} else {
-		console.log("onChangeTime ELSE")
+		console.warn("Error with Time parameters...")
 	}
-	timename.value = `${TIME_NAME_OBJ[timetype.value]} ${timefrom.value} to ${timeto.value}`
+	timename.value = `${TIME_NAME_OBJ[timetype.value]} ${timefrom.value} - ${timeto.value}`
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// help functions for onChangeScore
+///////////////////////////////////////////////////////////////////////////////
+function createCompairsonBlockforScoreRow(order) {
+	////////////////////////////////////////////////////////////////////////
+	//edit old Dom elements for Guest Side: input + title in paragraph block
+	////////////////////////////////////////////////////////////////////////
+	//get total, guest, home widgets: label, input
+	let scorelabel = document.querySelector(`label[for=${SCORE_ID_INPUT_SCORE}${order}]`)
+	let scoreinput = document.getElementById(SCORE_ID_INPUT_SCORE+order)
+	//redefine input params
+	scoreinput.min = -5
+	scoreinput.max = 5
+	scoreinput.value = 0
+	scoreinput.id = SCORE_ID_INPUT_GUEST + order
+	scoreinput.name = SCORE_NAME_INPUT_GUEST + order
+	scoreinput.setAttribute("onchange", `onChangeScore("foraguest",${order})`)
+	//redefine label params
+	scorelabel.innerHTML = "Fora guest:"
+	scorelabel.htmlFor = SCORE_ID_INPUT_GUEST + order
+	//create p col : "Team guest"
+	let divParagraphAttrs = {
+		"innerHTML": "<p>Team guest</p>",
+		"style": SCORE_STYLE_TITLE
+		}
+	let divGuestParagraphCol = createTagWithAttrs("div", divParagraphAttrs)
+	let divGuestParagraphWraper = createTagWithAttrs("div", {"class" : CLASS_COL_MD_1})
+	divGuestParagraphWraper.appendChild(divGuestParagraphCol)
+	//get parent div label + input
+	let divInputGuest = scorelabel.parentNode
+	//redefine empty div
+	let divEmpty = divInputGuest.nextSibling
+	divEmpty.setAttribute("class", CLASS_COL_MD_2)
+	//insert divParagraf after input+label block
+	divInputGuest.after(divGuestParagraphWraper)
+	/////////////////////////////////////
+	//create new block for Home Team side
+	/////////////////////////////////////
+	//create Title Block
+	let divHomeParagraphWraper = createTagWithAttrs("div", {"class": CLASS_COL_MD_1})
+	let divHomeParagraphWraperAttrs = {
+		"innerHTML": "<p>Team home</p>",
+		"style": SCORE_STYLE_TITLE
+		}
+	let divHomeParagraphCol = createTagWithAttrs("div", divHomeParagraphWraperAttrs)
+	divHomeParagraphWraper = appendAllChild(divHomeParagraphWraper, divHomeParagraphCol)
+	//create input Block
+	let divForaHome = createTagWithAttrs("div", {"class": CLASS_COL_MD_1})
+	let labelHome = createTagWithAttrs("label", {"for": SCORE_ID_INPUT_HOME + order})
+	labelHome.innerHTML = "Fora home:"
+	let inputHomeForaAttrs = {
+		"min": -5,
+		"max": 5,
+		"value": 0,
+		"id": SCORE_ID_INPUT_HOME + order,
+		"name": SCORE_NAME_INPUT_HOME + order,
+		"class": CLASS_INPUT,
+		"onchange": `onChangeScore("forahome", ${order})`,
+		"type": INPUT_TYPE_OBJ.n,
+		"required": ""
+		}
+	let inputHomeFora = createTagWithAttrs("input", inputHomeForaAttrs)
+	divForaHome = appendAllChild(divForaHome, labelHome, inputHomeFora)
+	//get div input state Row and append after it Paragraph and Input Divs
+	let selectState = document.getElementById(SCORE_ID_TYPE_SELECT+order)
+	let parent = selectState.parentNode
+	parent.after(divForaHome)
+	parent.after(divHomeParagraphWraper)
+}
+
+function createDefaultBlockforScoreRow(order) {
+	////////////////////////////////////////////////////////////
+	//delete COMPAIR COLS: p-Home, labelHome, inputHome, p-Guest
+	//redefine inputGuest, labelGuest to Score
+	//redefine EmptyDiv class
+	////////////////////////////////////////////////////////////
+	let row = document.getElementById(ID_ROW+order)
+	let deletelist = []
+	for (node of row.childNodes) {
+		if (["Fora home:","Team home", "Team guest"].includes(node.textContent)) {
+			deletelist.push(node)
+		} else if (node.textContent == "Fora guest:") {
+			let label = document.querySelector(`label[for=${SCORE_ID_INPUT_GUEST}${order}]`)
+			let input = document.getElementById(SCORE_ID_INPUT_GUEST+order)
+			//redeffine label attr "for"
+			label.innerHTML = "Score:"
+			label.htmlFor = SCORE_ID_INPUT_SCORE + order
+			//redefine input attr
+			input.min = 0
+			input.max = 20
+			input.value = 0
+			input.id = SCORE_ID_INPUT_SCORE + order
+			input.className = CLASS_INPUT
+			input.name = SCORE_NAME_INPUT_SCORE + order
+			input.setAttribute("onchange", `onChangeScore("score", "${order}")`)
+		} else if (node.textContent == "") {
+			node.className = CLASS_COL_MD_5
+		}
+	}
+	deletelist.map((elem) => elem.remove())
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// function to manage Score Row wodgets
+///////////////////////////////////////////////////////////////////////////////
 function onChangeScore(type, order) {
-	let scorename = document.getElementById(TIME_ID+order)
-	let scoretype = document.getElementById(TIME_ID_SELECT_STSTUS+order)
-	//set name
-	scorename.value = SCORE_NAME_OBJ[scoretype.value]
-	if (scoretype.value==="compairson") {
-		//create new layout
+	let name = ''
+	let scorename = document.getElementById(SCORE_ID+order)
+	let scoretype = document.getElementById(SCORE_ID_TYPE_SELECT+order)
+	//total, home, guest widgets
+	if (type === "state") {
+		if (scoretype.value === "c") {
+			createCompairsonBlockforScoreRow(order)
+			name = "set parameters..."
+		} else if (["t", "h", "g"].includes(scoretype.value)) {
+			// layout: check is value of compair and score widgets have some values and change the name if no generate new layout by defailt if yes change the name
+			//check is there compair state widgets
+			let foraHomeInput = document.getElementById(SCORE_ID_INPUT_HOME+order)
+			if (foraHomeInput != null) {
+				createDefaultBlockforScoreRow(order)
+				name = "set parameters..."
+			} else {
+				let compairVal = document.getElementById(SCORE_ID_COMPAIR_TYPE+order).value
+				let scoreVal = document.getElementById(SCORE_ID_INPUT_SCORE+order).value
+				name = `${SCORE_NAME_OBJ[scoretype.value]}${compairVal}${scoreVal}`
+			}
+		} else {
+			console.warn("Error with Score parameters 'not state'")
+		}
+	} else if (["score", "compair"].includes(type)) {
 		//edit name
-	} else if (type == "score") {
+		if (scoretype.value === "c") {
+			let compairVal = document.getElementById(SCORE_ID_COMPAIR_TYPE+order).value
+			let homeForaVal = document.getElementById(SCORE_ID_INPUT_HOME+order).value
+			let guestForaVal = document.getElementById(SCORE_ID_INPUT_GUEST+order).value
+			name = `${SCORE_NAME_OBJ[scoretype.value]} home(${homeForaVal})${compairVal}guest(${guestForaVal})`
+		} else if (["t", "h", "g"].includes(scoretype.value)) {
+			let compairVal = document.getElementById(SCORE_ID_COMPAIR_TYPE+order).value
+			let scoreVal = document.getElementById(SCORE_ID_INPUT_SCORE+order).value
+			name = `${SCORE_NAME_OBJ[scoretype.value]}${compairVal}${scoreVal}`
+		} else {
+			console.warn("Error with Score parameters 'no score and no compair'")
+		}
 		//edit name
-	} else if (type == "compairstate") {
-		//edit name
-	} else if (type == "forehome") {
-		//edit name
-	} else if (type == "foraguest") {
+	} else if (["forahome", "foraguest"].includes(type)) {
+		let compairVal = document.getElementById(SCORE_ID_COMPAIR_TYPE+order).value
+		let homeForaVal = document.getElementById(SCORE_ID_INPUT_HOME+order).value
+		let guestForaVal = document.getElementById(SCORE_ID_INPUT_GUEST+order).value
+		name = `${SCORE_NAME_OBJ[scoretype.value]} home(${homeForaVal})${compairVal}guest(${guestForaVal})`
+	} else {
+		console.warn("Error with Score parameters...")
 		//edit name
 	}
+		//create new layout
+	scorename.value = name
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//delete row and make editable parent Node, redefine "and" & "or" orders lists
+///////////////////////////////////////////////////////////////////////////////
 function deleteRow(order) {
-	// body...
 	//delete logicoperator block
 	//delete div with row by order
 	alert("WE USE DELE FOR ORDER = " + order)
@@ -595,7 +741,7 @@ function createChoices(type, order, state=null) {
 			"name": SCORE_NAME_COMPAIR + order,
 			"id": SCORE_ID_COMPAIR_TYPE + order,
 			"choices": SCORE_COMPAIR_CHOICES_OBJ,
-			"onchange": "alert('SELECT compairson')"
+			"onchange": `onChangeScore("compair","${order}")`
 		},
 		"score": {
 			"label": "Type:",
@@ -604,7 +750,7 @@ function createChoices(type, order, state=null) {
 			"name": SCORE_NAME_TYPE_SELECT + order,
 			"id": SCORE_ID_TYPE_SELECT + order,
 			"choices": SCORE_COMPAIR_TYPE_OBJ,
-			"onchange": "alert('SELECT Score type')"
+			"onchange": `onChangeScore("state","${order}")`
 		}
 	}
 	let div = createTagWithAttrs("div", {"class" : choicesManagerConsts[type]["classDivCol"]})

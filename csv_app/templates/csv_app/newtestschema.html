@@ -130,6 +130,15 @@
 				<option value="score">by score</option>
 			</select>
 		</div>
+<!-- LOGICOPERATOR -->
+		<div class="form-group col-md-1 mb-0">
+			<label for="id_add_select_logic">Logicoperator:</label>
+			<select name="add_name_select_logic" id="id_add_select_logic" class="form-control custom-select" disabled>
+				<option value="and" selected="">AND</option>
+				<option value="or">OR</option>
+			</select>
+		</div>
+		<!-- EMPTY DIV -->
 		<div class="form-group col-md-6 mb-0">
 		</div>
 <!-- ADD ORDER -->
@@ -145,15 +154,8 @@
 				<option value="1" selected="">1</option>
 			</select>
 		</div>
-<!-- LOGICOPERATOR -->
-		<div class="form-group col-md-1 mb-0">
-			<label for="id_add_select_logic">Logicoperator:</label>
-			<select name="add_name_select_logic" id="id_add_select_logic" class="form-control custom-select" disabled>
-				<option value="and" selected="">AND</option>
-				<option value="or">OR</option>
-			</select>
-		</div>
 	</div>
+
 	<div class="form-row mt-3">
 		<div class="form-group col-md-2 mb-0">
 			<button type = "button" onclick = "addNewRow()" class="btn btn-primary btn-lg">Add column</button>
