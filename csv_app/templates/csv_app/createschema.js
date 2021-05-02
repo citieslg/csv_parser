@@ -21,7 +21,7 @@ const INPUT_TYPE_OBJ = {
 const SCORE_FILTER_NAME = "_sccore_"
 const SCORE_ID = "id_score_"
 //col select score type filter
-const SCORE_NAME_TYPE_SELECT = "score_type_select_"//+ order
+const SCORE_NAME_TYPE_SELECT = "score_type_select_"//+ order 
 const SCORE_ID_TYPE_SELECT = "id_score_type_"//+order
 const SCORE_COMPAIR_TYPE_OBJ = {
 	"t" : "total",
@@ -35,7 +35,7 @@ const SCORE_NAME_INPUT_SCORE = "score_input_name_"//+order
 const SCORE_ID_INPUT_SCORE = "id_score_input_"//+order
 //col colmpairson choices
 const SCORE_ID_COMPAIR_TYPE = "id_compair_"//+order
-const SCORE_NAME_COMPAIR = "compair_"//+order
+const SCORE_NAME_COMPAIR = "compair_"//+order 
 const SCORE_COMPAIR_CHOICES_OBJ = {
 	"==" : "==",
 	"<=" : "&lt;=",
@@ -148,7 +148,7 @@ const SCORE_NAME_OBJ = {
 // onload
 ///////////////////////////////////////////////////////////////////////////////
 function setDefaultState() {
-	//on load function makes selected all matches state!!!
+	//on load function makes selected "all" matches state!!!
 	let select = document.getElementById(STATE_SELECT_ID)
 	select.options[0].selected=true
 	manageAddFormByStateRow()
@@ -175,10 +175,12 @@ function Row(logicoperator,parentorder) {
 		console.log("SOmething wrong")
 		this.order = "nothing"
 	}
+	console.log("Row obj constructor. Row was created with order = ", this.order, " for parent order = ", parentorder)
 }
 
 function Time(logicoperator, parentorder) {
 	Row.call(this, logicoperator, parentorder);
+	console.log("Time obj constructor")
 	this.timetype = null
 	this.valfrom = null
 	this.valto = null
@@ -186,6 +188,7 @@ function Time(logicoperator, parentorder) {
 
 function Score(logicoperator, parentorder) {
 	Row.call(this, logicoperator, parentorder);
+	console.log("Score obj constructor")
 	this.scoretype = null
 	this.compairson = null
 	//for type total, guest, home
@@ -193,16 +196,106 @@ function Score(logicoperator, parentorder) {
 	//for type compairson
 	this.valhome = null
 	this.valguest = null
+	// this.value = range()
 }
 
-function RowManager(row, rowobj, logicoperator) {
-	this.row = row
-	this.rowobj = rowobj
-	this.logicoperator = logicoperator
-	this.childrens = null
-	this.getorders = function (argument) {
-		// body...
-	};
+
+function Branch() {
+	//filter validator
+	this.state = null
+	this.timefrom = null
+	this.timeto = null
+	this.scoretotal = null
+	this.scorehome = null
+	this.scoreguest = null
+	this.homefora = null
+	this.guestfora = null
+	this.conditinForCompairson = null
+	this.listoforders = []
+}
+
+RowManager = {
+	//first
+	state:"all",
+	order: "1",
+	childrens: [],
+	branches: [],
+	allOrders: [],
+	// ORDER MANAGERS RETURNS obect with list of order
+	//{"0":"0", "0_1": "0_1","0_2": "0_2"...}
+	getScoreOrOrderList: function () {
+		console.log(">>>RowManager_get_SCORE_OR_OrderList")
+		return "Score OR"
+	},
+
+	getScoreAndOrderList: function () {
+		console.log(">>>RowManager_get_SCORE_AND_OrderList")
+		return "Score AND"
+	},
+
+	getTimeOrOrderList: function () {
+		console.log(">>>RowManager_get_TIME_OR_OrderList")
+		return "Time OR"
+	},
+
+	getTimeAndOrderList: function () {
+		console.log(">>>RowManager_get_TIME_AND_OrderList")
+		return "Time ANDgit "
+	},
+
+	getAllOrders: function (childrensArray = this.childrens) {
+		console.log(">>>getAllOrders with New array")
+		for (item of childrensArray) {
+			if (item.childrens.length > 0) {
+				console.log(">>>>>>getAllOrders recurcive")
+				this.allOrders.push(item.order)
+				this.getAllOrders(item.childrens)
+			} else {
+				console.log(">>>>>>getAllOrders add new Order")
+				this.allOrders.push(item.order)
+			}
+		}
+	},
+
+	getRowObjectByOrder: function (order) {
+		console.log("getRowObjectByOrder with order = ", order)
+		let indexList = order.split("_")
+		let obj = this
+		//we take ome by one index-1 in obj.childrens and go deeper
+		for (index of indexList.slice(1:)) {
+			obj = obj.childrens[+index-1]
+		}
+		return obj
+	},
+
+	validateOrderByLogic: function (toOrderVal, logicoperator) {
+		if (logicoperator === "or") {
+				return toOrderVal.slice(0, toOrderVal.lastIndexOf("_"))
+			} else if (logicoperator === "and") {
+				return toOrderVal
+			} else {
+				console.log("validateOrderByLogic NO LOGIC")
+				return 0
+			}
+	},
+
+	addRowObj: function (row, toOrderVal, obj=null) {
+		if (toOrderVal=="1") {
+			//get and set State row type and add first filter row
+			let stateNode = document.getElementById()
+			this.state = stateNode.options[stateNode.selectedIndex].text
+			this.childrens.push(row)
+			return console.log("addRowOb toOrderVal = 1!!!")
+		} else {
+			order = this.validateOrderByLogic(toOrderVal, row.logicoperator)
+			obj = this.getRowObjectByOrder(order)
+			if (order == "1") {
+				this.childrens.push(row)
+			} else {
+				obj.childrens.push(row)
+			}
+		}
+	}
 }
 // let t1 = new Time(logicoperator = "or", parentorder = "1_1")
 // console.log(t1.logicoperator)
@@ -212,18 +305,7 @@ function RowManager(row, rowobj, logicoperator) {
 // let t3 = new Row(logicoperator = "or", parentorder = "1_1")
 // console.log(t3.order)
 
-///////////////////////////////////////////////////////////////////////////////
-//Rows obj with Order manager
-///////////////////////////////////////////////////////////////////////////////
-let StateRowObj = {
-	order : "1",
-	statustype : "all",
-	childrens : null
-}
-let state = new RowManager(row="status", rowobj=StateRowObj, logicoperator=null)
-let RowsManager = {
-	"1" : state,
-}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //ADD FORM
@@ -242,10 +324,16 @@ function addNewRow() {
 	let logicoperatorValue = 
 		logicoperator.options[logicoperator.options.selectedIndex].value
 	//get new value for order
-	let neworder = getNewOrder(orderValue)
-	createRow(typerowValue, neworder, logicoperatorValue, orderValue)
+	// let neworder = getNewOrder(orderValue)
+	//set not editable widgets for parent row
+	setPropertyDisabledForRow(orderValue, true)
 	//create RowObj(order, logicoperator, rowtype, rowobj)
-	//add to RowsObj
+	let newrow = (typerowValue === "time") ? new Time(logicoperatorValue, orderValue): new Score(logicoperatorValue, orderValue)
+	console.log("addNewRow logicoperatorValue = ", logicoperatorValue)
+	console.log("addNewRow typerow = ", typerowValue)
+	RowManager.addRowObj(newrow, orderValue)
+	//create a layout for new row
+	createRow(typerowValue, neworder, logicoperatorValue, orderValue)
 }
 
 function createRow(typerow, neworder, logicoperator, add_to_orderVal) {
@@ -277,6 +365,45 @@ function createRow(typerow, neworder, logicoperator, add_to_orderVal) {
 	insertAfter(divElement, mainDiv)
 	//logic operator will be add to the block Row abowe it
 	createLogic(logicoperator, neworder)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//ADD FORM MANAGERS
+///////////////////////////////////////////////////////////////////////////////
+function onChangeAddForm(type) {
+	//change orders list for state: time, score with each logicoperators
+	let stateVal = document.getElementById()
+	let logicVal = document.getElementById()
+	let orderSelect = document.getElementById()
+	if (type === "state") {
+		if (stateVal.value === "time") {
+			//by default will set for logic "OR"
+			//for new Time row avaliable only "OR" operator
+			//only we can add Time with "AND" operator for "branch" with no time row
+			let orderList = RowManager.getTimeOrOrderList()
+		} else if (stateVal.value === "score") {
+			//by default set for "OR"
+			//Score can be added to any row
+			let orderList = RowManager.getScoreOrOrderList()
+		}
+	} else if (type === "logic" && logicVal === "OR" ) {
+		if (stateVal.value === "time") {
+			let orderList = RowManager.getTimeOrOrderList()
+		} else if (stateVal.value === "score") {
+			let orderList = RowManager.getScoreOrOrderList()
+		}
+		//update 
+	} else if (type === "logic" && logicVal === "AND") {
+		if (stateVal.value === "time") {
+			//Time row can be added only to "branch" with no Time row
+			let orderList = RowManager.getTimeAndOrderList()
+		} else if (stateVal.value === "score") {
+			//Score row can be add to any Row
+			let orderList = RowManager.getScoreAndOrderList()
+		}
+	}
+	//set logic list to Order widget
+	setOrders(orderList)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -443,6 +570,43 @@ function onChangeTime(type, order) {
 		console.warn("Error with Time parameters...")
 	}
 	timename.value = `${TIME_NAME_OBJ[timetype.value]} ${timefrom.value} - ${timeto.value}`
+}
+
+function setPropertyDisabledForRow(order, isDisabled=true) {
+	//get div row and make disabled all input widgets
+	let rowDiv = document.getElementById(ID_ROW+order)
+	for (child of rowDiv.children) {
+		for (item of child.children) {
+			if (isEditableDisabledOfNode(item.name)) {
+				item.disabled = isDisabled
+			}
+		}
+	}
+}
+
+function isEditableDisabledOfNode(nodeName) {
+	//if Node returns "undefined"
+	if (nodeName == null) {
+		return false
+	}
+	//all consts name without order
+	let names = [
+		SCORE_NAME_TYPE_SELECT,
+		SCORE_NAME_INPUT_SCORE,
+		SCORE_NAME_COMPAIR,
+		SCORE_NAME_INPUT_HOME,
+		SCORE_NAME_INPUT_GUEST,
+		TIME_NAME_SELECT_STSTUS,
+		TIME_NAME_FROM,
+		TIME_NAME_TO,
+		STATE_SELECT_NAME
+		]
+	for (name of names) {
+		if (nodeName.includes(name)) {
+			return true
+		}
+	}
+	return false
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -613,6 +777,7 @@ function deleteRow(order) {
 	let divBlock = document.getElementById(ID_ROW+order)
 	logicBlok.remove()
 	divBlock.remove()
+	setEditableRow(order)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -702,12 +867,13 @@ function createLogic(logicoperatorValue, order) {
 	//order = "1_1" with one indent
 	//order = "1_2_1" with two indents
 	let arrayFromOrder = order.split("_")
+	console.log("createLogic arrayFromOrder.length = ", arrayFromOrder.length)
 	let elem = document.createElement("div")
 	elem.innerHTML = 
 	`<div class="form-row mt-2" name="${logicoperatorValue + LOGIC_NAME + order}" id="${LOGIC_ID+order}">
-		<div class="form-group col-md-${arrayFromOrder.length-1} mb-0">
+		<div class="form-group col-md-${arrayFromOrder.length} mb-0">
 		</div>
-		<div class="form-group col-md-${12-(arrayFromOrder.length-1)} mb-0">
+		<div class="form-group col-md-${12-(arrayFromOrder.length)} mb-0">
 			<div class="alert alert-info col" role="alert">
 				${logicoperatorValue.toUpperCase()}
 			</div>
@@ -810,7 +976,7 @@ function createTagWithAttrs(tag, ...options) {
 
 function insertAfter(parentElement, newElement) {
 	return parentElement.insertAdjacentElement('afterend', newElement)
-	}
+}
 
 function appendAllChild(parentElem, ...childrensElem) {
 	for (let i = 0; i < childrensElem.length; i++ ) {
@@ -853,3 +1019,7 @@ function setTime(time, sign) {
 	houers = houers.toString().length === 1 ? "0"+houers.toString() : houers
 	return [houers, minutes].join(":")
 }
+
+
+const range = (start, end, length = end-srart +1) =>
+	Array.from({ length }, (_,i) => start + i)
