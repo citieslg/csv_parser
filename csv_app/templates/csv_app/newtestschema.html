@@ -116,8 +116,8 @@
 
 
 
-<!-- EDD ROW FORM -->
-<form style="margin-left: 10%; margin-right: 10%;" class="border border-secondary rounded p-3" name="addcolumnform">
+<!-- ADD ROW FORM -->
+<form style="margin-left: 10%; margin-right: 10%;" class="border border-success rounded p-3" name="addcolumnform">
 	<div class="form-row mt-2">
 		<div class="form-group col-md-2 mb-0">
 			<label for="id_add_name">Column name:</label>
@@ -125,7 +125,7 @@
 		</div>
 		<div class="form-group col-md-1 mb-0">
 			<label for="id_add_select_type">Filter type:</label>
-			<select name="add_name_select_type" id="id_add_select_type" class="form-control custom-select">
+			<select name="add_name_select_type" id="id_add_select_type" class="form-control custom-select" onchange="onChangeAddForm('state')">
 				<option value="time" selected="">by time</option>
 				<option value="score">by score</option>
 			</select>
@@ -133,7 +133,7 @@
 <!-- LOGICOPERATOR -->
 		<div class="form-group col-md-1 mb-0">
 			<label for="id_add_select_logic">Logicoperator:</label>
-			<select name="add_name_select_logic" id="id_add_select_logic" class="form-control custom-select" disabled>
+			<select name="add_name_select_logic" id="id_add_select_logic" class="form-control custom-select" onchange="onChangeAddForm('logic')" disabled>
 				<option value="and" selected="">AND</option>
 				<option value="or">OR</option>
 			</select>
@@ -150,15 +150,19 @@
 <!-- SELECT ORDER -->
 		<div class="form-group col-md-1 mb-0">
 			<label for="id_add_order_select">Order:</label>
-			<select name="add_name_oreder_select" id="id_add_order_select" class="form-control custom-select" disabled>
+			<select name="add_name_oreder_select" id="id_add_order_select" class="form-control custom-select is-valid" aria-describedby="id_add_order_selectFeedback" disabled required>
 				<option value="1" selected="">1</option>
 			</select>
+<!-- ERROR BLOCK -->
+			<div id="id_add_order_selectFeedback" class="invalid-feedback">
+				No orders ...
+			</div>
 		</div>
 	</div>
 
 	<div class="form-row mt-3">
 		<div class="form-group col-md-2 mb-0">
-			<button type = "button" onclick = "addNewRow()" class="btn btn-primary btn-lg">Add column</button>
+			<button type = "button" onclick = "addNewRow()" class="btn btn-primary btn-lg" id="add_submit">Add column</button>
 		</div>
 	</div>
 </form>
