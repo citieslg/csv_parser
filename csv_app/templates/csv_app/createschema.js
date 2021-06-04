@@ -219,6 +219,7 @@ RowManager = {
 	timeANDOrders: [],
 	scoreOROrders: [],
 	scoreANDOrders: [],
+	avaliableScoreChoicesObj: {},
 
 
 	getLastOrder: function (object_order) {
@@ -302,7 +303,7 @@ RowManager = {
 			}
 		}
 	},
-
+//Order calculators
 	calculateTimeOrOrders: function (childrensArray = this.childrens) {
 		console.log("func calculate TimeOrOrders")
 		for (item of childrensArray) {
@@ -373,13 +374,40 @@ RowManager = {
 					console.log("	ELSE push ", item.scoretype, "\n    with order = ", item.order)
 					scorelist.push(item.scoretype)
 				}
-				if (scorelist.length < 4) {
+				if (scorelist.length < Object.values(SCORE_COMPAIR_TYPE_OBJ).length) {
 					this.scoreANDOrders.push(item.order)
 				} else {
-					console.log("SCORE LIST > 4")
+					console.warn("SCORE LIST > ", Object.values(SCORE_COMPAIR_TYPE_OBJ).length)
 				}
 			}
 		}
+	},
+//score calculators, creats avaliable score row choices
+	getAvaliableScoreChoices: function (order) {
+		console.log("getAvaliableScoreChoices for order = ", order)
+		orderIndexes = order.split("_")
+		obj = this
+		//returns Array with keys
+		scoreDataList = Object.values(SCORE_COMPAIR_TYPE_OBJ)
+		console.log("scoreDataList = ", scoreDataList)
+		for (index of orderIndexes.slice(1)) {
+			obj = obj.childrens[+index-1]
+			if (obj.name === "Score") {
+				console.log("	We will delete score type =", obj.scoretype)
+				scoreDataList.splice(scoreDataList.indexOf(obj.scoretype),1)
+			}
+		}
+		this.avaliableScoreChoicesObj = {}
+		if (scoreDataList.length > 0) {
+			for (val of scoreDataList) {
+				this.avaliableScoreChoicesObj[getKeyValByValueInObj(val,SCORE_COMPAIR_TYPE_OBJ)] = val
+			}
+		console.log("return obj = ",this.avaliableScoreChoicesObj)
+		// this.avaliableScoreChoicesObj
+		return true
+		}
+	console.log("No data for choices for the row")
+	return false
 	}
 }
 
@@ -408,11 +436,14 @@ function addNewRow() {
 	orderValue = RowManager.getLastOrder(orderValue)
 	console.log("addNewRow try to add to orrder = ", orderValue)
 	// create RowObj(order, logicoperator, rowtype, rowobj)
-	let newrow = (typerowValue === "time") ? new Time(logicoperatorValue, orderValue): new Score(logicoperatorValue, orderValue)
-	RowManager.addRowObj(newrow, orderValue)
+	//check is it avaliable to add Score
+	if (RowManager.getAvaliableScoreChoices(orderValue) || typerowValue === "time") {
+		let newrow = (typerowValue === "time") ? new Time(logicoperatorValue, orderValue): new Score(logicoperatorValue, orderValue)
+		RowManager.addRowObj(newrow, orderValue)
+		createRow(typerowValue, newrow, logicoperatorValue, orderValue)
+	}
 	//redefine orders and set ADD block with TIME OR orders
 	setInitialAddForm()
-	createRow(typerowValue, newrow, logicoperatorValue, orderValue)
 }
 
 function createRow(typerow, newrow, logicoperator, add_to_orderVal) {
@@ -670,7 +701,8 @@ function createScorerow(rowobj) {
 	}
 	let scoreinput = createTagWithAttrs("input", inputAttrs)
 	divInput = appendAllChild(divInput, labelinput, scoreinput)
-	rowobj.scoretype = "total"//the value is by default
+	//set default value
+	rowobj.scoretype = RowManager.avaliableScoreChoicesObj[Object.keys(RowManager.avaliableScoreChoicesObj)[0]]//"total"//the value is by default
 	return [type, compairson, divInput]
 }
 
@@ -952,6 +984,8 @@ function onChangeScore(type, order) {
 	let scoretype = document.getElementById(SCORE_ID_TYPE_SELECT+order)
 	//total, home, guest widgets
 	if (type === "state") {
+		// let scoreObj = RowManager.getRowObjectByOrder(order)
+		// scoreObj.scoretype = 
 		if (scoretype.value === "c") {
 			createCompairsonBlockforScoreRow(order)
 			name = "set parameters..."
@@ -1156,7 +1190,8 @@ function createChoices(type, order, state=null) {
 			"classSelect": CLASS_SELECT,
 			"name": SCORE_NAME_TYPE_SELECT + order,
 			"id": SCORE_ID_TYPE_SELECT + order,
-			"choices": SCORE_COMPAIR_TYPE_OBJ,
+			// "choices": SCORE_COMPAIR_TYPE_OBJ,
+			"choices": RowManager.avaliableScoreChoicesObj,
 			"onchange": `onChangeScore("state","${order}")`
 		}
 	}
@@ -1259,6 +1294,10 @@ function setTime(time, sign) {
 	minutes = minutes.toString().length === 1 ? "0"+minutes.toString() : minutes
 	houers = houers.toString().length === 1 ? "0"+houers.toString() : houers
 	return [houers, minutes].join(":")
+}
+
+function getKeyValByValueInObj(val, obj) {
+	return Object.keys(obj).find(item => obj[item] === val)
 }
 
 const range = (start, end, length = end-srart +1) =>
