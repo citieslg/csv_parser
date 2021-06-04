@@ -122,6 +122,7 @@ const CLASS_INPUT = "form-control"
 const CLASS_SELECT = "form-control custom-select"
 const CLASS_COL_MD_1 = "form-group col-md-1 mb-0"
 const CLASS_COL_MD_2 = "form-group col-md-2 mb-0"
+const CLASS_COL_MD_4 = "form-group col-md-4 mb-0"
 const CLASS_COL_MD_5 = "form-group col-md-5 mb-0"
 const CLASS_DELETE = "text-danger control mt-5"
 // CONSTS ETC
@@ -213,7 +214,6 @@ RowManager = {
 	state:"all",
 	order: "1",
 	childrens: [],
-	// branches: [],
 	allOrders: [],
 	timeOROrders: [],
 	timeANDOrders: [],
@@ -359,13 +359,25 @@ RowManager = {
 		}
 	},
 
-	calculateScoreAndOrders: function (childrensArray = this.childrens) {
-		// console.log("func calculateScoreAndOrders")
+	calculateScoreAndOrders: function (childrensArray = this.childrens, scorelist = []) {
+		console.log("func calculateScoreAndOrders with scorelist = ", scorelist)
 		for (item of childrensArray) {
 			if (item.childrens.length > 0) {
-				this.calculateScoreAndOrders(item.childrens)
+				if (item.name === "Score") {
+					console.log("	IF push ", item.scoretype, "\n    with order = ", item.order)
+					scorelist.push(item.scoretype)
+				}
+				this.calculateScoreAndOrders(item.childrens, scorelist)
 			} else {
-				this.scoreANDOrders.push(item.order)
+				if (item.name === "Score") {
+					console.log("	ELSE push ", item.scoretype, "\n    with order = ", item.order)
+					scorelist.push(item.scoretype)
+				}
+				if (scorelist.length < 4) {
+					this.scoreANDOrders.push(item.order)
+				} else {
+					console.log("SCORE LIST > 4")
+				}
 			}
 		}
 	}
@@ -419,10 +431,10 @@ function createRow(typerow, newrow, logicoperator, add_to_orderVal) {
 	let empty = 0
 	if (typerow === "time"){
 		widgets = createTimerow(newrow)
-		empty = 4
+		empty = 3
 	} else {
 		widgets = createScorerow(newrow)
-		empty = 5
+		empty = 4
 	}
 	//empty block
 	let emptyCols = createEmptyCols(empty)
@@ -858,7 +870,7 @@ function createCompairsonBlockforScoreRow(order) {
 	let divInputGuest = scorelabel.parentNode
 	//redefine empty div
 	let divEmpty = divInputGuest.nextSibling
-	divEmpty.setAttribute("class", CLASS_COL_MD_2)
+	divEmpty.setAttribute("class", CLASS_COL_MD_1)
 	//insert divParagraf after input+label block
 	divInputGuest.after(divGuestParagraphWraper)
 	/////////////////////////////////////
@@ -922,7 +934,7 @@ function createDefaultBlockforScoreRow(order) {
 			input.name = SCORE_NAME_INPUT_SCORE + order
 			input.setAttribute("onchange", `onChangeScore("score", "${order}")`)
 		} else if (node.textContent == "") {
-			node.className = CLASS_COL_MD_5
+			node.className = CLASS_COL_MD_4
 		}
 	}
 	deletelist.map((elem) => elem.remove())
@@ -1042,7 +1054,7 @@ function createColsOrderAndDelete(order, typerow){
 	///////////////
 	//COLUMN ORDER
 	///////////////
-	let divOrder = createTagWithAttrs("div", {"class" : CLASS_COL_MD_1})
+	let divOrder = createTagWithAttrs("div", {"class" : CLASS_COL_MD_2})
 	let labelAttrs = {
 		"for" : order,
 		"innerHTML" : "Order:"
