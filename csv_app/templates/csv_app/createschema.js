@@ -207,38 +207,37 @@ function Score(logicoperator, parentorder) {
 	// this.value = range()
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// BRANCH OBJ
-// for validation the branch
-///////////////////////////////////////////////////////////////////////////////
-function Branch(stateInitRow="all") {
-	//filter validator
-	this.state = stateInitRow
-	if (this.state === "soon") {
-		this.time = null
-	} else {
-		this.time = null
-		this.scoreTotal = null
-		this.scoreHome = null
-		this.scoreGuest = null
-		this.scoreCompair = null
-	}
-	this.listoforders = []
-}
-
 RowManager = {
 	//first
 	name: "RowManager",
 	state:"all",
 	order: "1",
 	childrens: [],
-	branches: [],
+	// branches: [],
 	allOrders: [],
 	timeOROrders: [],
 	timeANDOrders: [],
 	scoreOROrders: [],
 	scoreANDOrders: [],
-	getAllOrders: function (childrensArray = this.childrens) {
+
+
+	getLastOrder: function (object_order) {
+		console.log("getLastOrder order = ", object_order)
+		this.allOrders = []
+		let obj = this.getRowObjectByOrder(object_order)
+		if (object_order != "1") {
+			if (obj.childrens.length === 0) {
+				return obj.order
+			} else {
+				this.getAllOrders(obj.childrens)
+				return this.allOrders[this.allOrders.length-1]
+			}
+		} else {
+			return this.order
+		}
+	},
+
+	getAllOrders: function (childrensArray) {
 	//the idea is that the method fill arrays:
 	//timeOrOrders, timeAndOrders,
 	//scoreOrOrders, scoreAndOrders
@@ -258,7 +257,6 @@ RowManager = {
 				this.allOrders.push(item.order)
 			}
 		}
-		return this.allOrders
 	},
 
 	getRowObjectByOrder: function (order) {
@@ -306,17 +304,20 @@ RowManager = {
 	},
 
 	calculateTimeOrOrders: function (childrensArray = this.childrens) {
-		// console.log("func calculate TimeOrOrders")
+		console.log("func calculate TimeOrOrders")
 		for (item of childrensArray) {
-			if (item.childrens > 0) {
-				// console.log("	calculateTimeOrOrders IF")
+			if (item.childrens.length > 0) {
+				console.log("	IF item order = ", item.order)
 				if (item.name === "Time" && childrensArray.indexOf(item) === childrensArray.length-1) {
+				// 	console.log(		"calculateTimeOrOrders")
 					this.timeOROrders.push(item.order)
 				}
-				this.createBranches(item.childrens)
+				this.calculateTimeOrOrders(item.childrens)
 			} else {
 				// console.log("	calculatreTimeOrOrders ELSE")
+				console.log("	Else order", item.order)
 				if (item.name === "Time" && childrensArray.indexOf(item) === childrensArray.length-1) {
+					console.log("		order =", item.order," was added")
 					this.timeOROrders.push(item.order)
 				}
 			}
@@ -326,50 +327,44 @@ RowManager = {
 	calculateScoreOrOrders: function (childrensArray = this.childrens) {
 		// console.log("func calculate ScoreOrOrders")
 		for (item of childrensArray) {
-			if (item.childrens > 0) {
+			if (item.childrens.length > 0) {
 				// console.log("	getScoreOrOrders IF")
 				if (item.name === "Score" && childrensArray.indexOf(item) === childrensArray.length-1) {
 					this.scoreOROrders.push(item.order)
 				}
-				this.createBranches(item.childrens)
+				this.calculateScoreOrOrders(item.childrens)
 			} else {
 				// console.log("	getScoreOrOrders ELSE")
-				if (item.name === "Score") {
+				if (item.name === "Score" && childrensArray.indexOf(item) === childrensArray.length-1) {
 					this.scoreOROrders.push(item.order)
 				}
 			}
 		}
 	},
 
-	calculateTimeAndOrders: function (childrensArray = this.childrens, timeflag=false) {
-		console.log("func calculateTimeAndOrders")
+	calculateTimeAndOrders: function (childrensArray = this.childrens) {
+		// console.log("func calculateTimeAndOrders")
 		for (item of childrensArray) {
-			if (item.childrens > 0) {
-				console.log("	calculateTimeAndOrders IF")
+			if (item.childrens.length > 0) {
+				// console.log("	calculateTimeAndOrders IF")
 				if (item.name != "Time") {
-					this.createBranches(item.childrens)
-				} else {
-					console.log("		>>>calculateTimeAndOrders branch has Time Row")
+					this.calculateTimeAndOrders(item.childrens)
 				}
 			} else {
-				console.log("	calculateTimeAndOrders ELSE")
+				// console.log("	calculateTimeAndOrders ELSE")
 				if (item.name != "Time") {
-					this.timeOROrders.push(item.order)
-				} else {
-					console.log("		<<<<calculateTimeAndOrders branch has Time Row")
+					this.timeANDOrders.push(item.order)
 				}
 			}
 		}
 	},
 
 	calculateScoreAndOrders: function (childrensArray = this.childrens) {
-		console.log("func calculateScoreAndOrders")
+		// console.log("func calculateScoreAndOrders")
 		for (item of childrensArray) {
-			if (item.childrens > 0) {
-				console.log("	calculateScoreAndOrders IF")
-				this.createBranches(item.childrens)
+			if (item.childrens.length > 0) {
+				this.calculateScoreAndOrders(item.childrens)
 			} else {
-				console.log("	calculateScoreAndOrders ELSE")
 				this.scoreANDOrders.push(item.order)
 			}
 		}
@@ -396,15 +391,19 @@ function addNewRow() {
 	// let neworder = getNewOrder(orderValue)
 	//set not editable widgets for parent row
 	setPropertyDisabledForRow(orderValue, true)
+	//get last order in branch
+
+	orderValue = RowManager.getLastOrder(orderValue)
+	console.log("addNewRow try to add to orrder = ", orderValue)
 	// create RowObj(order, logicoperator, rowtype, rowobj)
 	let newrow = (typerowValue === "time") ? new Time(logicoperatorValue, orderValue): new Score(logicoperatorValue, orderValue)
 	RowManager.addRowObj(newrow, orderValue)
 	//redefine orders and set ADD block with TIME OR orders
 	setInitialAddForm()
-	createRow(typerowValue, newrow.order, logicoperatorValue, orderValue)
+	createRow(typerowValue, newrow, logicoperatorValue, orderValue)
 }
 
-function createRow(typerow, neworder, logicoperator, add_to_orderVal) {
+function createRow(typerow, newrow, logicoperator, add_to_orderVal) {
 	//the function creates HTML for layout
 	//the divElement is block after which the block of new Row will be added
 	let divElement = document.getElementById(ID_ROW + add_to_orderVal)
@@ -412,27 +411,27 @@ function createRow(typerow, neworder, logicoperator, add_to_orderVal) {
 	let mainDivAttrs = {
 		"class": CLASS_ROW,
 		"name": NAME_ROW,
-		"id": ID_ROW + neworder
+		"id": ID_ROW + newrow.order
 	}
 	let mainDiv = createTagWithAttrs("div", mainDivAttrs)
-	let colName = createNameCol(typerow, neworder, logicoperator)
+	let colName = createNameCol(typerow, newrow.order, logicoperator)
 	let widgets = []
 	let empty = 0
 	if (typerow === "time"){
-		widgets = createTimerow(neworder)
+		widgets = createTimerow(newrow)
 		empty = 4
 	} else {
-		widgets = createScorerow(neworder)
+		widgets = createScorerow(newrow)
 		empty = 5
 	}
 	//empty block
 	let emptyCols = createEmptyCols(empty)
 	//delete and order cols
-	let [orderCol, delCol] = createColsOrderAndDelete(neworder, typerow)
+	let [orderCol, delCol] = createColsOrderAndDelete(newrow.order, typerow)
 	mainDiv = appendAllChild(mainDiv, colName, widgets, emptyCols, orderCol, delCol)
 	insertAfter(divElement, mainDiv)
 	//logic operator will be add to the block Row abowe it
-	createLogic(logicoperator, neworder)
+	createLogic(logicoperator, newrow.order)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -444,26 +443,46 @@ function onChangeAddForm(type) {
 	let stateVal = document.getElementById(ADD_ID_SELECT_TYPE)
 	let logicVal = document.getElementById(ADD_ID_SELECT_LOGIC)
 	let orderSelect = document.getElementById(ADD_ID_SELECT_ADD_OREDER)
-	console.log("logicVal = ", logicVal.value)
+	// console.log("ADD FORM: Logic Node value = ", logicVal.value)
 	//clear orders
 	RowManager.allOrders = []
 	RowManager.timeOROrders = []
 	RowManager.scoreOROrders = []
+	RowManager.timeANDOrders = []
+	RowManager.scoreANDOrders = []
 	let orderList = []
 	if (type === "state") {
 		console.log("	STATE")
 		//by default will set for logic "OR"
 		if (stateVal.value === "time") {
-			RowManager.calculateTimeOrOrders()
-			orderList = RowManager.timeOROrders
+			if (logicVal.value === "or") {
+				RowManager.calculateTimeOrOrders()
+				orderList = RowManager.timeOROrders
+			} else if (logicVal.value === "and") {
+				RowManager.calculateTimeAndOrders()
+				orderList = RowManager.timeANDOrders
+			} else {
+				console.warn("Not correct logic value for Time")
+			}
+			// console.log("		calculate orders for time+or")
 		} else if (stateVal.value === "score") {
+			// console.log("		calculate orders for score+or")
 			//by default set for "OR"
-			RowManager.calculateScoreOrOrders()
-			orderList = RowManager.scoreOROrders
+			if (logicVal.value === "or") {
+				RowManager.calculateScoreOrOrders()
+				orderList = RowManager.scoreOROrders
+			} else if (logicVal.value === "and") {
+				RowManager.calculateScoreAndOrders()
+				orderList = RowManager.scoreANDOrders
+			} else {
+				console.warn("Not correct logic value Score")
+			}
 		}
 		//set "OR" logic
-		logicVal.options[1].selected = true
+		// logicVal.options[1].selected = true
+		// console.log("	set logic OR value by default for STATE changes")
 		if (RowManager.childrens.length === 0) {
+			// console.log("	No filters so only 1 is avaliable order")
 			//set logic "AND"
 			logicVal.options[0].selected = true
 			//set orderList "1"
@@ -472,9 +491,11 @@ function onChangeAddForm(type) {
 	} else if (type === "logic" && logicVal.value === "or" ) {
 		console.log("	LOGIC OR")
 		if (stateVal.value === "time") {
+			// console.log("		calculate orders for TIME STATE+OR")
 			RowManager.calculateTimeOrOrders()
 			orderList = RowManager.timeOROrders
 		} else if (stateVal.value === "score") {
+			// console.log("		calculate orders for SCORE STATE+OR")
 			RowManager.calculateScoreOrOrders()
 			orderList = RowManager.scoreOROrders
 		}
@@ -482,15 +503,18 @@ function onChangeAddForm(type) {
 	} else if (type === "logic" && logicVal.value === "and") {
 		console.log("	LOGIC AND")
 		if (stateVal.value === "time") {
+			// console.log("		calculate orders for TIME STATE+AND")
 			//Time row can be added only to "branch" with no Time row
 			RowManager.calculateTimeAndOrders()
 			orderList = RowManager.timeANDOrders
 		} else if (stateVal.value === "score") {
+			// console.log("		calculate orders for SCORE STATE+AND")
 			//Score row can be add to any Row
 			RowManager.calculateScoreAndOrders()
 			orderList = RowManager.scoreANDOrders
 		}
 	}
+	console.log("---FINISHED---")
 	//set logic list to Order widget
 	validateAddFormByOrder(orderSelect, orderList)
 }
@@ -529,29 +553,33 @@ function validateAddFormByOrder(selectOrderNode, orderList) {
 //TIME ROW
 ///////////////////////////////////////////////////////////////////////////////
 //create Time Row
-function createTimerow(order) {
+function createTimerow(rowobj) {
 	let ststusValue = document.getElementById(STATE_SELECT_ID).value
 	switch (ststusValue) {
 		//time values will be numbers
 		case "n":
 		case "a":
 			inputType = INPUT_TYPE_OBJ.n
+			rowobj.timetype = TIME_SELECT_STATUS_OBJ.n
 			break
 		//time values will in time format
 		case "s":
 		case "f":
 			inputType = INPUT_TYPE_OBJ.t
+			rowobj.timetype = TIME_SELECT_STATUS_OBJ.t
 			break
 		default:
 			//by default time row will create for matches onlin-"now"
 			//time values will be numbers
 			inputType = INPUT_TYPE_OBJ.n
+			rowobj.timetype = TIME_SELECT_STATUS_OBJ.n
 	}
+	//set default params for RowObj same with layout
 	//col select match type
-	let matchTypeChoicesDiv = createChoices("time" ,order, ststusValue)
+	let matchTypeChoicesDiv = createChoices("time" ,rowobj.order, ststusValue)
 	//col from
 	//col to
-	let [from, to] = createTimeRangeBlock(inputType, order)
+	let [from, to] = createTimeRangeBlock(inputType, rowobj.order)
 	return [matchTypeChoicesDiv, from, to]
 }
 
@@ -605,30 +633,32 @@ function createTimeRangeBlock(typeinput, order) {
 ///////////////////////////////////////////////////////////////////////////////
 //SCORE ROW
 ///////////////////////////////////////////////////////////////////////////////
-function createScorerow(order) {
+function createScorerow(rowobj) {
+	// console.log("createScorerow order of obj = ", rowobj.order)
 	//by default creates with type choice == total
-	let type =       createChoices("score", order)//type choices: total, home, guest, compairson
-	let compairson = createChoices("compair", order)//==, <, > ...
+	let type =       createChoices("score", rowobj.order)//type choices: total, home, guest, compairson
+	let compairson = createChoices("compair", rowobj.order)//==, <, > ...
 	//div input
 	let divInput = createTagWithAttrs("div", {"class": CLASS_COL_MD_1})
 	let labelAttrs = {
-		"for": SCORE_ID_INPUT_SCORE + order,
+		"for": SCORE_ID_INPUT_SCORE + rowobj.order,
 		"innerHTML": "Score:"
 	}
 	let labelinput = createTagWithAttrs("label", labelAttrs)
 	let inputAttrs = {
-		"id": SCORE_ID_INPUT_SCORE + order,
-		"name": SCORE_NAME_INPUT_SCORE + order,
+		"id": SCORE_ID_INPUT_SCORE + rowobj.order,
+		"name": SCORE_NAME_INPUT_SCORE + rowobj.order,
 		"min": 0,
 		"max": 20,
 		"required": "",
 		"type": "number",
 		"class": CLASS_INPUT,
 		"value": 0,
-		"onchange" : `onChangeScore("score", "${order}")`
+		"onchange" : `onChangeScore("score", "${rowobj.order}")`
 	}
 	let scoreinput = createTagWithAttrs("input", inputAttrs)
 	divInput = appendAllChild(divInput, labelinput, scoreinput)
+	rowobj.scoretype = "total"//the value is by default
 	return [type, compairson, divInput]
 }
 
@@ -690,6 +720,8 @@ function onChangeTime(type, order) {
 		console.warn("Error with Time parameters...")
 	}
 	timename.value = `${TIME_NAME_OBJ[timetype.value]} ${timefrom.value} - ${timeto.value}`
+	let obj = RowManager.getRowObjectByOrder(order)
+	obj.timetype = TIME_SELECT_STATUS_OBJ[timetype.value]
 }
 
 function setPropertyDisabledForRow(order, isDisabled=true) {
@@ -900,6 +932,9 @@ function createDefaultBlockforScoreRow(order) {
 // function to manage Score Row wodgets
 ///////////////////////////////////////////////////////////////////////////////
 function onChangeScore(type, order) {
+	// console.log("onChangeScore")
+	// console.log("type = ", type)
+	// console.log("order = ", order)
 	let name = ''
 	let scorename = document.getElementById(SCORE_ID+order)
 	let scoretype = document.getElementById(SCORE_ID_TYPE_SELECT+order)
@@ -923,6 +958,9 @@ function onChangeScore(type, order) {
 		} else {
 			console.warn("Error with Score parameters 'not state'")
 		}
+		obj = RowManager.getRowObjectByOrder(order)
+		obj.scoretype = SCORE_COMPAIR_TYPE_OBJ[scoretype.value]
+		// console.log("scoretype.value = ", scoretype.value)
 	} else if (["score", "compair"].includes(type)) {
 		//edit name
 		if (scoretype.value === "c") {
@@ -1078,6 +1116,7 @@ function createLogic(logicoperatorValue, order) {
 //CREATE CHOICES BLOCK
 ///////////////////////////////////////////////////////////////////////////////
 function createChoices(type, order, state=null) {
+	// console.log("createChoices order = ", order)
 	//type can be: time, compair, score
 	let choicesManagerConsts = {
 		"time": {
