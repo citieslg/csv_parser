@@ -406,8 +406,8 @@ RowManager = {
 		// this.avaliableScoreChoicesObj
 		return true
 		}
-	console.log("No data for choices for the row")
-	return false
+		console.log("No data for choices for the row")
+		return false
 	}
 }
 
@@ -433,14 +433,28 @@ function addNewRow() {
 	setPropertyDisabledForRow(orderValue, true)
 	//get last order in branch
 
-	orderValue = RowManager.getLastOrder(orderValue)
-	console.log("addNewRow try to add to orrder = ", orderValue)
+	lastOrderValue = RowManager.getLastOrder(orderValue)
+	console.log("addNewRow try to add to orrder = ", lastOrderValue)
 	// create RowObj(order, logicoperator, rowtype, rowobj)
 	//check is it avaliable to add Score
-	if (RowManager.getAvaliableScoreChoices(orderValue) || typerowValue === "time") {
-		let newrow = (typerowValue === "time") ? new Time(logicoperatorValue, orderValue): new Score(logicoperatorValue, orderValue)
-		RowManager.addRowObj(newrow, orderValue)
-		createRow(typerowValue, newrow, logicoperatorValue, orderValue)
+	// if (RowManager.getAvaliableScoreChoices(orderValue) || typerowValue === "time") {
+		// let newrow = (typerowValue === "time") ? new Time(logicoperatorValue, orderValue): new Score(logicoperatorValue, orderValue)
+		// RowManager.addRowObj(newrow, orderValue)
+		// createRow(typerowValue, newrow, logicoperatorValue, orderValue)
+	// }
+	let newrow = null
+	if (typerowValue === "score") {
+		if (RowManager.getAvaliableScoreChoices(orderValue)) {
+			newrow = new Score(logicoperatorValue, orderValue)
+			console.log("ADD NEW ROW f with order = ", newrow.order)
+			RowManager.addRowObj(newrow, orderValue)
+			createRow(typerowValue, newrow, logicoperatorValue, lastOrderValue)
+		}
+	} else if (typerowValue === "time") {
+			newrow = new Time(logicoperatorValue, orderValue)
+			console.log("ADD NEW ROW f with order = ", newrow.order)
+			RowManager.addRowObj(newrow, orderValue)
+			createRow(typerowValue, newrow, logicoperatorValue, lastOrderValue)
 	}
 	//redefine orders and set ADD block with TIME OR orders
 	setInitialAddForm()
@@ -475,6 +489,10 @@ function createRow(typerow, newrow, logicoperator, add_to_orderVal) {
 	insertAfter(divElement, mainDiv)
 	//logic operator will be add to the block Row abowe it
 	createLogic(logicoperator, newrow.order)
+	//this is historic desigion only with Score type
+	if (newrow.name === "Score") {
+		onChangeScore("state", newrow.order)
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
