@@ -2,6 +2,7 @@
 //CONSTS BLOCK
 ///////////////////////////////////////////////////////////////////////////////
 //ROW COMMON CONSTS
+const ID_DELETE = "del_"
 const NAME_ROW = "row"
 const ID_ROW = "row_"//for ID use row + order = "row_1"
 //COL NAME
@@ -178,7 +179,6 @@ function Row(logicoperator,parentorder) {
 	} else {
 		this.order = "nothing"
 	}
-	// console.log("Row obj constructor. Row was created with order = ", this.order, " for parent order = ", parentorder)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -219,11 +219,14 @@ RowManager = {
 	timeANDOrders: [],
 	scoreOROrders: [],
 	scoreANDOrders: [],
+	deletedOrders: [],
+	redefinedRows: [],
 	avaliableScoreChoicesObj: {},
+	redefineOrdersIterator: null,
+
 
 
 	getLastOrder: function (object_order) {
-		console.log("getLastOrder order = ", object_order)
 		this.allOrders = []
 		let obj = this.getRowObjectByOrder(object_order)
 		if (object_order != "1") {
@@ -242,19 +245,10 @@ RowManager = {
 	//the idea is that the method fill arrays:
 	//timeOrOrders, timeAndOrders,
 	//scoreOrOrders, scoreAndOrders
-		// console.log(">>>getAllOrders with New array ", childrensArray)
 		for (item of childrensArray) {
-			// console.log("FOR item = ", item.name)
 			if (item.childrens.length > 0) {
-				// console.log("	IF has childrens")
-				// console.log(">>>>>>getAllOrders recurcive with array ", item.childrens)
-				// console.log(">>>>>>getAllOrders IF push order to allOrders = ", item.order)
-				this.allOrders.push(item.order)
 				this.getAllOrders(item.childrens)
 			} else {
-				// console.log("	ELSE has childrens")
-				// console.log("\n>>>>>>getAllOrders add new Order")
-				// console.log(">>>>>>getAllOrders ELSE push order to allOrders = ", item.order)
 				this.allOrders.push(item.order)
 			}
 		}
@@ -282,43 +276,31 @@ RowManager = {
 	},
 
 	addRowObj: function (row, toOrderVal, obj=null) {
-		// console.log("addRowObj")
 		if (toOrderVal=="1") {
-			// console.log("	addRowObj to order 1")
 			//get and set State row type and add first filter row
 			let stateNode = document.getElementById(STATE_SELECT_ID)
 			this.state = stateNode.options[stateNode.selectedIndex].text
 			this.childrens.push(row)
 		} else {
-			// console.log("	addRowObj ELSE")
 			order = this.validateOrderByLogic(toOrderVal, row.logicoperator)
 			obj = this.getRowObjectByOrder(order)
 			if (order == "1") {
-				// console.log("		addRowObj Validate ELSE to 1")
-
 				this.childrens.push(row)
 			} else {
-				// console.log("		addRowObj Validate ELSE to ", obj.order)
 				obj.childrens.push(row)
 			}
 		}
 	},
-//Order calculators
+	//Order calculators
 	calculateTimeOrOrders: function (childrensArray = this.childrens) {
-		console.log("func calculate TimeOrOrders")
 		for (item of childrensArray) {
 			if (item.childrens.length > 0) {
-				console.log("	IF item order = ", item.order)
 				if (item.name === "Time" && childrensArray.indexOf(item) === childrensArray.length-1) {
-				// 	console.log(		"calculateTimeOrOrders")
 					this.timeOROrders.push(item.order)
 				}
 				this.calculateTimeOrOrders(item.childrens)
 			} else {
-				// console.log("	calculatreTimeOrOrders ELSE")
-				console.log("	Else order", item.order)
 				if (item.name === "Time" && childrensArray.indexOf(item) === childrensArray.length-1) {
-					console.log("		order =", item.order," was added")
 					this.timeOROrders.push(item.order)
 				}
 			}
@@ -326,16 +308,13 @@ RowManager = {
 	},
 
 	calculateScoreOrOrders: function (childrensArray = this.childrens) {
-		// console.log("func calculate ScoreOrOrders")
 		for (item of childrensArray) {
 			if (item.childrens.length > 0) {
-				// console.log("	getScoreOrOrders IF")
 				if (item.name === "Score" && childrensArray.indexOf(item) === childrensArray.length-1) {
 					this.scoreOROrders.push(item.order)
 				}
 				this.calculateScoreOrOrders(item.childrens)
 			} else {
-				// console.log("	getScoreOrOrders ELSE")
 				if (item.name === "Score" && childrensArray.indexOf(item) === childrensArray.length-1) {
 					this.scoreOROrders.push(item.order)
 				}
@@ -344,15 +323,12 @@ RowManager = {
 	},
 
 	calculateTimeAndOrders: function (childrensArray = this.childrens) {
-		// console.log("func calculateTimeAndOrders")
 		for (item of childrensArray) {
 			if (item.childrens.length > 0) {
-				// console.log("	calculateTimeAndOrders IF")
 				if (item.name != "Time") {
 					this.calculateTimeAndOrders(item.childrens)
 				}
 			} else {
-				// console.log("	calculateTimeAndOrders ELSE")
 				if (item.name != "Time") {
 					this.timeANDOrders.push(item.order)
 				}
@@ -361,39 +337,32 @@ RowManager = {
 	},
 
 	calculateScoreAndOrders: function (childrensArray = this.childrens, scorelist = []) {
-		console.log("func calculateScoreAndOrders with scorelist = ", scorelist)
 		for (item of childrensArray) {
 			if (item.childrens.length > 0) {
 				if (item.name === "Score") {
-					console.log("	IF push ", item.scoretype, "\n    with order = ", item.order)
 					scorelist.push(item.scoretype)
 				}
 				this.calculateScoreAndOrders(item.childrens, scorelist)
 			} else {
 				if (item.name === "Score") {
-					console.log("	ELSE push ", item.scoretype, "\n    with order = ", item.order)
 					scorelist.push(item.scoretype)
 				}
 				if (scorelist.length < Object.values(SCORE_COMPAIR_TYPE_OBJ).length) {
 					this.scoreANDOrders.push(item.order)
 				} else {
-					console.warn("SCORE LIST > ", Object.values(SCORE_COMPAIR_TYPE_OBJ).length)
 				}
 			}
 		}
 	},
-//score calculators, creats avaliable score row choices
+	//score calculators, creats avaliable score row choices
 	getAvaliableScoreChoices: function (order) {
-		console.log("getAvaliableScoreChoices for order = ", order)
 		orderIndexes = order.split("_")
 		obj = this
 		//returns Array with keys
 		scoreDataList = Object.values(SCORE_COMPAIR_TYPE_OBJ)
-		console.log("scoreDataList = ", scoreDataList)
 		for (index of orderIndexes.slice(1)) {
 			obj = obj.childrens[+index-1]
 			if (obj.name === "Score") {
-				console.log("	We will delete score type =", obj.scoretype)
 				scoreDataList.splice(scoreDataList.indexOf(obj.scoretype),1)
 			}
 		}
@@ -402,12 +371,110 @@ RowManager = {
 			for (val of scoreDataList) {
 				this.avaliableScoreChoicesObj[getKeyValByValueInObj(val,SCORE_COMPAIR_TYPE_OBJ)] = val
 			}
-		console.log("return obj = ",this.avaliableScoreChoicesObj)
 		// this.avaliableScoreChoicesObj
 		return true
 		}
-		console.log("No data for choices for the row")
 		return false
+	},
+	//delete managers
+	extractRow: function (order) {
+		console.log("f extractRow")
+		let indexes = order.split("_").splice(1)
+		console.log("indexes = ", indexes)
+		obj = this
+		console.log("length = ", indexes.length)
+		for (let i = 0; i < indexes.length; i++) {
+			console.log("	i = ",i)
+			if (i === indexes.length-1) {
+				console.log("	IF i === indexes.length-1")
+				console.log("	obj.childrens = ", obj.childrens)
+				// console.log("	index for splice = ",+indexes[i]-1)
+				// this.redefinedRows = obj.childrens.slice(+indexes[i]) with childrens in one array
+				let redefinedList = obj.childrens.slice(+indexes[i])
+				console.log("	slice for redefine = ", redefinedList)
+				this.setredifinedRows(redefinedList)
+				console.log("	childrens After setredefined Rows  = ", obj.childrens)
+				let objForDelete = obj.childrens.splice(+indexes[i]-1,1).pop()
+				// console.log("	>>array this.redefinedRows = " ,this.redefinedRows)
+				console.log("	>>objFordelete = ", objForDelete)
+
+				this.deletedOrders.push(objForDelete.order)
+				if (objForDelete.childrens.length > 0) {
+					this.extractAllOrders(objForDelete)
+				}
+				return objForDelete
+			} else {
+				console.log("	ELSE i != indexes.length -1")
+				obj = obj.childrens[+indexes[i]-1]
+				console.log("	>>ELSE obj = ", obj)
+			}
+		}
+	return false
+	},
+
+	extractAllOrders: function (obj) {
+		console.log("f extractAllOrders")
+		console.log("obj = ", obj)
+		for (item of obj.childrens) {
+			this.deletedOrders.push(item.order)
+			if (item.childrens.length > 0) {
+				extractAllOrders(item)
+			}
+		}
+	},
+
+	redefineRowsOrdersGenerator: function* redefine() {
+		let index = 0
+		let length = this.redefinedRows.length
+		let parentOrderOfdeleteRow = this.deletedOrders[0].parentorder
+		let orderofDeleteRow = this.deletedOrders[0].order
+		//Array with all rows whch order and parent order are redefining
+		let RowParentOrd = this.redefinedRows[index].parentorder
+		let NewRowParentOrd = parentOrderOfdeleteRow
+		let RowOrderVal = this.redefinedRows[index].order
+		let NewRowOrderVal = orderofDeleteRow
+		let RowLogicVal = this.redefinedRows[index].logicoperator
+		let RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.name.toLowerCase() : this.scoretype
+		this.redefinedRows[index].order = NewRowOrderVal
+		this.redefinedRows[index].parentorder = NewRowParentOrd
+		while (index < length) {
+			console.log("\n>>>index = ",index)
+			yield [RowLogicVal, RowOrderVal, NewRowOrderVal, RowType];
+			index++
+			let RowParentOrd = this.redefinedRows[index].parentorder
+			let RowOrderVal = this.redefinedRows[index].order
+			let RowLogicVal = this.redefinedRows[index].logicoperator
+			let RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.name.toLowerCase() : this.scoretype
+			// validate
+			let NewRowParentOrd = null
+			let NewRowOrderVal = null
+			// set
+			this.redefinedRows[index].order = NewRowOrderVal
+			this.redefinedRows[index].parentorder = NewRowParentOrd
+		}
+	},
+
+	setredifinedRows: function (arrayOfRows) {
+		for (row of arrayOfRows) {
+			if (row.childrens.length!=0) {
+				this.redefinedRows.push(row)
+				this.setredifinedRows(row.childrens)
+			} else {
+				this.redefinedRows.push(row)
+			}
+		}
+	},
+
+	setDefaultValues: function () {
+		this.allOrders = []
+		this.timeOROrders = []
+		this.timeANDOrders = []
+		this.scoreOROrders = []
+		this.scoreANDOrders = []
+		this.deletedOrders = []
+		this.redefinedRows = []
+		this.avaliableScoreChoicesObj = {}
+		this.redefineOrdersIterator = null
 	}
 }
 
@@ -432,27 +499,16 @@ function addNewRow() {
 	//set not editable widgets for parent row
 	setPropertyDisabledForRow(orderValue, true)
 	//get last order in branch
-
 	lastOrderValue = RowManager.getLastOrder(orderValue)
-	console.log("addNewRow try to add to orrder = ", lastOrderValue)
-	// create RowObj(order, logicoperator, rowtype, rowobj)
-	//check is it avaliable to add Score
-	// if (RowManager.getAvaliableScoreChoices(orderValue) || typerowValue === "time") {
-		// let newrow = (typerowValue === "time") ? new Time(logicoperatorValue, orderValue): new Score(logicoperatorValue, orderValue)
-		// RowManager.addRowObj(newrow, orderValue)
-		// createRow(typerowValue, newrow, logicoperatorValue, orderValue)
-	// }
 	let newrow = null
 	if (typerowValue === "score") {
 		if (RowManager.getAvaliableScoreChoices(orderValue)) {
 			newrow = new Score(logicoperatorValue, orderValue)
-			console.log("ADD NEW ROW f with order = ", newrow.order)
 			RowManager.addRowObj(newrow, orderValue)
 			createRow(typerowValue, newrow, logicoperatorValue, lastOrderValue)
 		}
 	} else if (typerowValue === "time") {
 			newrow = new Time(logicoperatorValue, orderValue)
-			console.log("ADD NEW ROW f with order = ", newrow.order)
 			RowManager.addRowObj(newrow, orderValue)
 			createRow(typerowValue, newrow, logicoperatorValue, lastOrderValue)
 	}
@@ -499,12 +555,10 @@ function createRow(typerow, newrow, logicoperator, add_to_orderVal) {
 //ADD FORM MANAGERS
 ///////////////////////////////////////////////////////////////////////////////
 function onChangeAddForm(type) {
-	console.log("-----ONCHANGE-----\n")
 	//change orders list for state: time, score with each logicoperators
 	let stateVal = document.getElementById(ADD_ID_SELECT_TYPE)
 	let logicVal = document.getElementById(ADD_ID_SELECT_LOGIC)
 	let orderSelect = document.getElementById(ADD_ID_SELECT_ADD_OREDER)
-	// console.log("ADD FORM: Logic Node value = ", logicVal.value)
 	//clear orders
 	RowManager.allOrders = []
 	RowManager.timeOROrders = []
@@ -513,7 +567,6 @@ function onChangeAddForm(type) {
 	RowManager.scoreANDOrders = []
 	let orderList = []
 	if (type === "state") {
-		console.log("	STATE")
 		//by default will set for logic "OR"
 		if (stateVal.value === "time") {
 			if (logicVal.value === "or") {
@@ -525,9 +578,7 @@ function onChangeAddForm(type) {
 			} else {
 				console.warn("Not correct logic value for Time")
 			}
-			// console.log("		calculate orders for time+or")
 		} else if (stateVal.value === "score") {
-			// console.log("		calculate orders for score+or")
 			//by default set for "OR"
 			if (logicVal.value === "or") {
 				RowManager.calculateScoreOrOrders()
@@ -541,50 +592,39 @@ function onChangeAddForm(type) {
 		}
 		//set "OR" logic
 		// logicVal.options[1].selected = true
-		// console.log("	set logic OR value by default for STATE changes")
 		if (RowManager.childrens.length === 0) {
-			// console.log("	No filters so only 1 is avaliable order")
 			//set logic "AND"
 			logicVal.options[0].selected = true
 			//set orderList "1"
 			orderList = ["1"]
 		}
 	} else if (type === "logic" && logicVal.value === "or" ) {
-		console.log("	LOGIC OR")
 		if (stateVal.value === "time") {
-			// console.log("		calculate orders for TIME STATE+OR")
 			RowManager.calculateTimeOrOrders()
 			orderList = RowManager.timeOROrders
 		} else if (stateVal.value === "score") {
-			// console.log("		calculate orders for SCORE STATE+OR")
 			RowManager.calculateScoreOrOrders()
 			orderList = RowManager.scoreOROrders
 		}
 		//update 
 	} else if (type === "logic" && logicVal.value === "and") {
-		console.log("	LOGIC AND")
 		if (stateVal.value === "time") {
-			// console.log("		calculate orders for TIME STATE+AND")
 			//Time row can be added only to "branch" with no Time row
 			RowManager.calculateTimeAndOrders()
 			orderList = RowManager.timeANDOrders
 		} else if (stateVal.value === "score") {
-			// console.log("		calculate orders for SCORE STATE+AND")
 			//Score row can be add to any Row
 			RowManager.calculateScoreAndOrders()
 			orderList = RowManager.scoreANDOrders
 		}
 	}
-	console.log("---FINISHED---")
 	//set logic list to Order widget
 	validateAddFormByOrder(orderSelect, orderList)
 }
 
 function validateAddFormByOrder(selectOrderNode, orderList) {
-	// console.log("validateAddFormByOrder")
 	let divAddBlock = document.getElementsByName("addcolumnform").item(0)
 	let buttonSubmit = document.getElementById(ADD_BUTTON_ID)
-	// console.log(">>>>validateAddFormByOrder ", divAddBlock)
 	if (orderList.length === 0) {
 		//set danger border
 		divAddBlock.className = ADD_CLASS_BORDER_INVALID
@@ -600,16 +640,63 @@ function validateAddFormByOrder(selectOrderNode, orderList) {
 	rewriteOrders(selectOrderNode, orderList)
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//CREATE ORDER FOR NEW ROW delete the method
-///////////////////////////////////////////////////////////////////////////////
-// function getNewOrder(order) {
-// 	//the func get example "1_2_1" and add +1 to last number => "1_2_2"
-// 	let neworder = order.split("_")
-// 	neworder[order.length - 1] = +neworder[order.length - 1] + 1
-// 	return neworder.join("_")
-// }
+function setInitialAddForm() {
+	let addFilterType = document.getElementById(ADD_ID_SELECT_TYPE)
+	let addLogic = document.getElementById(ADD_ID_SELECT_LOGIC)
+	let addOrder = document.getElementById(ADD_ID_SELECT_ADD_OREDER)
+	addOrder.disabled = false
+	//set logic "OR" by default
+	addLogic.options[1].selected = true
+	//logic make editable or no
+	//if layout state is NOT!!! "soon" logic can be any(OR or AND)
+	if (RowManager.state != STATE_SELECT_OBJ.s) {
+		//pass
+		addLogic.disabled = false
+	//if layout state "soon" logic can be only "OR"
+	} else {
+		addLogic.disabled = true
+	}
+	//creates new orders
+	RowManager.allOrders = []
+	RowManager.timeOROrders = []
+	RowManager.scoreOROrders = []
+	let orderList = []
+	//check wich type of row in first line childrens
+	//because by default will set up "Or" order list
+	//and it it can be avaliable only for same type row
+	//set OR option selected
+	addLogic.options[1].selected = true
+	if (RowManager.childrens[0].name === "Score") {
+		RowManager.calculateScoreOrOrders()
+		orderList = RowManager.scoreOROrders
+		//set score + or layout
+		addFilterType.options[1].selected = true
+	} else if (RowManager.childrens[0].name === "Time") {
+		RowManager.calculateTimeOrOrders()
+		orderList = RowManager.timeOROrders
+		//set time + or layout
+		addFilterType.options[0].selected = true
+	} else {
+		console.warn("Not correct type in initial function")
+	}
+	rewriteOrders(addOrder, orderList)
+}
 
+//validation ADD FORM
+function rewriteOrders(selectNode, neworderslist) {
+	// delete previous orders
+	while (selectNode.options.length) {
+		selectNode.options.remove(0)
+	}
+	for (let i = 0; i < neworderslist.length; i++) {
+		let optionAttrs = {
+			"innerHTML": neworderslist[i],
+			"value": i
+		}
+		let option = createTagWithAttrs("option", optionAttrs)
+		selectNode.appendChild(option)
+	}
+}
 ///////////////////////////////////////////////////////////////////////////////
 //TIME ROW
 ///////////////////////////////////////////////////////////////////////////////
@@ -695,7 +782,6 @@ function createTimeRangeBlock(typeinput, order) {
 //SCORE ROW
 ///////////////////////////////////////////////////////////////////////////////
 function createScorerow(rowobj) {
-	// console.log("createScorerow order of obj = ", rowobj.order)
 	//by default creates with type choice == total
 	let type =       createChoices("score", rowobj.order)//type choices: total, home, guest, compairson
 	let compairson = createChoices("compair", rowobj.order)//==, <, > ...
@@ -756,6 +842,9 @@ function manageAddFormByStateRow() {
 	}
 	//set state for RowManager
 	RowManager.state = stateVal.options[stateVal.selectedIndex].text
+	//set OrdesChoices = ["1"]
+	let orderWidget = document.getElementById(ADD_ID_SELECT_ADD_OREDER)
+	rewriteOrders(orderWidget, ["1"])
 }
 
 function onChangeTime(type, order) {
@@ -788,6 +877,7 @@ function onChangeTime(type, order) {
 
 function setPropertyDisabledForRow(order, isDisabled=true) {
 	//get div row and make disabled all input widgets
+	console.log("f setPropertyDisabledForRow order = ", order, "\n with isDisabled = ",isDisabled)
 	let rowDiv = document.getElementById(ID_ROW+order)
 	for (child of rowDiv.children) {
 		for (item of child.children) {
@@ -823,75 +913,11 @@ function isEditableDisabledOfNode(nodeName) {
 	return false
 }
 
-function setInitialAddForm() {
-	// console.log("func setInitialAddForm")
-	let addFilterType = document.getElementById(ADD_ID_SELECT_TYPE)
-	let addLogic = document.getElementById(ADD_ID_SELECT_LOGIC)
-	let addOrder = document.getElementById(ADD_ID_SELECT_ADD_OREDER)
-	// console.log("setInitialAddForm addOrder", addOrder)
-	addOrder.disabled = false
-	//set logic "OR" by default
-	addLogic.options[1].selected = true
-	//logic make editable or no
-	//if layout state is NOT!!! "soon" logic can be any(OR or AND)
-	if (RowManager.state != STATE_SELECT_OBJ.s) {
-		//pass
-		addLogic.disabled = false
-	//if layout state "soon" logic can be only "OR"
-	} else {
-		addLogic.disabled = true
-	}
-	//creates new orders
-	RowManager.allOrders = []
-	RowManager.timeOROrders = []
-	RowManager.scoreOROrders = []
-	let orderList = []
-	//check wich type of row in first line childrens
-	//because by default will set up "Or" order list
-	//and it it can be avaliable only for same type row
-	//set OR option selected
-	addLogic.options[1].selected = true
-	// console.log("setInitialAddForm NAME[0]=",RowManager.childrens[0].name)
-	if (RowManager.childrens[0].name === "Score") {
-		// console.log("	setInitialAddForm IF SCORE")
-		RowManager.calculateScoreOrOrders()
-		orderList = RowManager.scoreOROrders
-		//set score + or layout
-		addFilterType.options[1].selected = true
-	} else if (RowManager.childrens[0].name === "Time") {
-		// console.log("	setInitialAddForm ELSE IF TIEM")
-		RowManager.calculateTimeOrOrders()
-		orderList = RowManager.timeOROrders
-		//set time + or layout
-		addFilterType.options[0].selected = true
-	} else {
-		console.warn("Not correct type in initial function")
-	}
-	// console.log("setInitialAddForm orderList = ",orderList)
-	rewriteOrders(addOrder, orderList)
-}
-
-
-function rewriteOrders(selectNode, neworderslist) {
-	// console.log("func rewriteOrders")
-	// delete previous orders
-	while (selectNode.options.length) {
-		selectNode.options.remove(0)
-	}
-	// console.log("	rewriteOrders opt = ",selectNode.options)
-	for (let i = 0; i < neworderslist.length; i++) {
-		let optionAttrs = {
-			"innerHTML": neworderslist[i],
-			"value": i
-		}
-		let option = createTagWithAttrs("option", optionAttrs)
-		selectNode.appendChild(option)
-	}
-}
 ///////////////////////////////////////////////////////////////////////////////
 // help functions for onChangeScore
 ///////////////////////////////////////////////////////////////////////////////
 function createCompairsonBlockforScoreRow(order) {
+	console.log("f createCompairsonBlockforScoreRow with order", order)
 	////////////////////////////////////////////////////////////////////////
 	//edit old Dom elements for Guest Side: input + title in paragraph block
 	////////////////////////////////////////////////////////////////////////
@@ -903,8 +929,8 @@ function createCompairsonBlockforScoreRow(order) {
 	scoreinput.max = 5
 	scoreinput.value = 0
 	scoreinput.id = SCORE_ID_INPUT_GUEST + order
-	scoreinput.name = SCORE_NAME_INPUT_GUEST + order
-	scoreinput.setAttribute("onchange", `onChangeScore("foraguest",${order})`)
+	scoreinput.setAttribute("name",SCORE_NAME_INPUT_GUEST + order)
+	scoreinput.setAttribute('onchange', `onChangeScore('foraguest','${order}')`)
 	//redefine label params
 	scorelabel.innerHTML = "Fora guest:"
 	scorelabel.htmlFor = SCORE_ID_INPUT_GUEST + order
@@ -945,7 +971,7 @@ function createCompairsonBlockforScoreRow(order) {
 		"id": SCORE_ID_INPUT_HOME + order,
 		"name": SCORE_NAME_INPUT_HOME + order,
 		"class": CLASS_INPUT,
-		"onchange": `onChangeScore("forahome", ${order})`,
+		"onchange": `onChangeScore('forahome', '${order}')`,
 		"type": INPUT_TYPE_OBJ.n,
 		"required": ""
 		}
@@ -959,6 +985,7 @@ function createCompairsonBlockforScoreRow(order) {
 }
 
 function createDefaultBlockforScoreRow(order) {
+	console.log("f createDefaultBlockforScoreRow with order", order)
 	////////////////////////////////////////////////////////////
 	//delete COMPAIR COLS: p-Home, labelHome, inputHome, p-Guest
 	//redefine inputGuest, labelGuest to Score
@@ -994,9 +1021,7 @@ function createDefaultBlockforScoreRow(order) {
 // function to manage Score Row wodgets
 ///////////////////////////////////////////////////////////////////////////////
 function onChangeScore(type, order) {
-	// console.log("onChangeScore")
-	// console.log("type = ", type)
-	// console.log("order = ", order)
+	console.log("f onChangeScore with order = ", order)
 	let name = ''
 	let scorename = document.getElementById(SCORE_ID+order)
 	let scoretype = document.getElementById(SCORE_ID_TYPE_SELECT+order)
@@ -1024,7 +1049,6 @@ function onChangeScore(type, order) {
 		}
 		obj = RowManager.getRowObjectByOrder(order)
 		obj.scoretype = SCORE_COMPAIR_TYPE_OBJ[scoretype.value]
-		// console.log("scoretype.value = ", scoretype.value)
 	} else if (["score", "compair"].includes(type)) {
 		//edit name
 		if (scoretype.value === "c") {
@@ -1041,7 +1065,10 @@ function onChangeScore(type, order) {
 		}
 		//edit name
 	} else if (["forahome", "foraguest"].includes(type)) {
-		let compairVal = document.getElementById(SCORE_ID_COMPAIR_TYPE+order).value
+		console.log(">>>>ERROR for ", SCORE_ID_COMPAIR_TYPE+order)
+		let compairVal = document.getElementById(SCORE_ID_COMPAIR_TYPE+order)
+		console.log(compairVal)
+
 		let homeForaVal = document.getElementById(SCORE_ID_INPUT_HOME+order).value
 		let guestForaVal = document.getElementById(SCORE_ID_INPUT_GUEST+order).value
 		name = `${SCORE_NAME_OBJ[scoretype.value]} home(${homeForaVal})${compairVal}guest(${guestForaVal})`
@@ -1058,18 +1085,159 @@ function onChangeScore(type, order) {
 // delete childrens Nodes
 ///////////////////////////////////////////////////////////////////////////////
 function deleteRow(order) {
-	//if Node has childrens
+	// console.log("f deleteRow for order = ", order)
+	//delete Row with childrens from Row Manager
+	let deletedObj = RowManager.extractRow(order)
+	let orderList  = RowManager.deletedOrders
+	console.log("\n\n----\ndeleteRow orderList = ", orderList)
+
+	//DELETE ROW ONE BY ONE FROM LAYOUT
 	//delete Childrens and logicBlocks
-	//delete logicoperator block
-	//delete div with row by order
-	let logicBlok = document.getElementById(LOGIC_ID+order)
-	let divBlock = document.getElementById(ID_ROW+order)
-	logicBlok.remove()
-	divBlock.remove()
-	//if parent has no childrens set editable
-	//if parebt has childrebs redefine all orders in the branch!!!
-	order = "1"//for test
-	setPropertyDisabledForRow(order, isDisabled=false)
+	for (order of orderList) {
+		console.log(">>>WE delete logic = ", LOGIC_ID+order)
+		console.log(">>>WE delete logic = ", ID_ROW+order)
+		//delete logicoperator block
+		let logicBlok = document.getElementById(LOGIC_ID+order)
+		//delete div with row by order
+		let divBlock = document.getElementById(ID_ROW+order)
+		logicBlok.remove()
+		divBlock.remove()
+	}
+	//REDEFINE ORDERS FOR LAYOUT AND ROWMANAGER
+	redefineOrders()
+	// order = "1"//for test
+	//set editable parent block
+	let parentOrder = deletedObj.parentorder
+	if (RowManager.redefinedRows.length === 0) {
+		setPropertyDisabledForRow(parentOrder, isDisabled=false)
+	}
+	if (RowManager.childrens.length > 0) {
+		setInitialAddForm()
+	} else {
+		manageAddFormByStateRow()
+	}
+	//set default RowManager params
+	RowManager.setDefaultValues()
+}
+
+function redefineOrders() {
+	console.log("\n---+++redefineOrders+++---\n")
+	console.log("Rows for redefine = ", RowManager.redefinedRows)
+	let m = RowManager.redefineRowsOrdersGenerator()
+	let oldParent = ""
+	let newParent = ""
+	let oldOrd = ""
+	let newOrd = ""
+	for (let counter = 0; counter < RowManager.redefinedRows.length; counter++) {
+		[logicValue, oldOrd, newOrd, typeRowValue] = m.next().value
+		//redefine layout
+		redefineCurentRowWithNewOrder(logicValue, oldOrd, newOrd, typeRowValue)
+	}
+}
+
+function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
+	//slice not includes last value === compair
+	let name = (typerow === "time") ? typerow : "score"
+	let typeSoreArray = Object.values(SCORE_COMPAIR_TYPE_OBJ).slice(0, 3)
+	console.log("name = ", name)
+	console.log("typeSoreArray = ", typeSoreArray)
+
+	//redefine logic block
+	let logic = document.getElementById(LOGIC_ID + oldord)
+	logic.setAttribute("name", logicVal + LOGIC_NAME + neword)
+	logic.id = LOGIC_ID + neword
+
+	//redefine Row
+	let divRow = document.getElementById(ID_ROW + oldord)
+	divRow.id = ID_ROW + neword
+
+	//name
+	let labelName = document.querySelector(`label[for=id_${name}_${oldord}]`)
+	let nameInput = document.getElementById(`id_${name}_${oldord}`)
+	labelName.htmlFor = "id_" + name + "_" + neword
+	nameInput.id = "id_" + name + "_" + neword
+	nameInput.setAttribute("name", logicVal + "_" + name + "_" + neword)
+
+	//order
+	let ordLabel = document.querySelector(`label[for="${oldord}"]`)
+	let inputOrd = document.getElementById(oldord)
+	// console.log(inputOrd)
+	ordLabel.htmlFor = neword
+	inputOrd.id = neword
+	inputOrd.name = name + "_order_" + neword
+	inputOrd.setAttribute("value", neword)
+
+	// delete
+	let a = document.getElementById(ID_DELETE + oldord)
+	a.setAttribute("onclick", `javascript:deleteRow("${neword}")`)
+	a.id = ID_DELETE + neword
+
+	//chenge order for differente Node
+	if (typerow === "time") {
+		console.log("SET TIME")
+		//match type
+		let labelMatchType = document.querySelector(`label[for=${TIME_ID_SELECT_STSTUS}${oldord}]`)
+		let selectTimeType = document.getElementById(`${TIME_ID_SELECT_STSTUS}${oldord}`)
+		labelMatchType.htmlFor = `${TIME_ID_SELECT_STSTUS}${neword}`
+		selectTimeType.id = `${TIME_ID_SELECT_STSTUS}${neword}`
+		selectTimeType.name = `${TIME_NAME_SELECT_STSTUS}${neword}`
+		selectTimeType.setAttribute("onchange", `onChangeTime('time', '${neword}')`)
+		//from
+		let labelFrom = document.querySelector(`label[for=${TIME_ID_FROM}${oldord}]`)
+		let inputFrom = document.getElementById(`${TIME_ID_FROM}${oldord}`)
+		labelFrom.htmlFor = `${TIME_ID_FROM}${neword}`
+		inputFrom.id = `${TIME_ID_FROM}${neword}`
+		inputFrom.name = `${TIME_NAME_FROM}${neword}`
+		inputFrom.setAttribute("onchange", `onChangeTime('from', '${neword}')`)
+		//to
+		let labelTo = document.querySelector(`label[for=${TIME_ID_TO}${oldord}]`)
+		let inputTo = document.getElementById(`${TIME_ID_TO}${oldord}`)
+		labelTo.htmlFor = `${TIME_ID_TO}${neword}`
+		inputTo.id = `${TIME_ID_TO}${neword}`
+		inputTo.name = `${TIME_NAME_TO}${neword}`
+		inputTo.setAttribute("onchange", `onChangeTime('to', '${neword}')`)
+	} else if (typerow == "compair" || typeSoreArray.includes(typerow)) {
+		// type
+		let labelScoreType = document.querySelector(`label[for=${SCORE_ID_TYPE_SELECT}${oldord}]`)
+		let scoreType = document.getElementById(`${SCORE_ID_TYPE_SELECT}${oldord}`)
+		labelScoreType.htmlFor = labelScoreType.htmlFor.replace(oldord, neword)
+		scoreType.id = scoreType.id.replace(oldord, neword)
+		scoreType.name = scoreType.name.replace(oldord, neword)
+		scoreType.setAttribute("onchange", `onChangeScore('state', '${neword}')`)
+		//compairson
+		let labelScoreCompairson = document.querySelector(`label[for=${SCORE_ID_COMPAIR_TYPE}${oldord}]`)
+		let compairsonSelect = document.getElementById(`${SCORE_ID_COMPAIR_TYPE}${oldord}`)
+		labelScoreCompairson.htmlFor = labelScoreCompairson.htmlFor.replace(oldord, neword)
+		compairsonSelect.id = compairsonSelect.id.replace(oldord, neword)
+		compairsonSelect.name = compairsonSelect.name.replace(oldord, neword)
+		compairsonSelect.setAttribute("onchange", `onChangeScore('compair', '${neword}')`)
+		if (typerow == "compair") {
+			console.log("SET COMPAIR")
+			let labelNode = null
+			let inputNode = null
+			//fora home and fora guest
+			for (fora of [SCORE_ID_INPUT_HOME, SCORE_ID_INPUT_GUEST]) {
+				typeOnChange = (fora === SCORE_ID_INPUT_HOME) ? "forahome" : "foraguest"
+				labelNode = document.querySelector(`label[for=${fora}${oldord}]`)
+				inputNode = document.getElementById(`${fora}${oldord}`)
+				labelNode.htmlFor = labelNode.htmlFor.replace(oldord, neword)
+				inputNode.id = inputNode.id.replace(oldord, neword)
+				inputNode.name = inputNode.name.replace(oldord, neword)
+				inputNode.setAttribute("onchange", `onChangeScore('${typeOnChange}', '${neword}')`)
+			}
+		} else {
+			console.log("SET Total, Home, Guest")
+			// score
+			let labelScoreInput = document.querySelector(`label[for=${SCORE_ID_INPUT_SCORE}${oldord}]`)
+			let scoreInputNode = document.getElementById(`${SCORE_ID_INPUT_SCORE}${oldord}`)
+			labelScoreInput.htmlFor = labelScoreInput.htmlFor.replace(oldord, neword)
+			scoreInputNode.id = scoreInputNode.id.replace(oldord, neword)
+			scoreInputNode.name = scoreInputNode.name.replace(oldord, neword)
+			scoreInputNode.setAttribute("onchange", `onChangeScore('compair', '${neword}')`)
+		}
+	} else {
+		console.warn("Not correct type row...")
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1131,6 +1299,7 @@ function createColsOrderAndDelete(order, typerow){
 		"style" : DELETE_STYLE
 		}
 	let aAttrs = {
+		"id" : ID_DELETE + order,
 		"class" : CLASS_DELETE,
 		"innerHTML" : "Delete",
 		"href" : "#",
@@ -1180,7 +1349,6 @@ function createLogic(logicoperatorValue, order) {
 //CREATE CHOICES BLOCK
 ///////////////////////////////////////////////////////////////////////////////
 function createChoices(type, order, state=null) {
-	// console.log("createChoices order = ", order)
 	//type can be: time, compair, score
 	let choicesManagerConsts = {
 		"time": {
