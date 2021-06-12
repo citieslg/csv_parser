@@ -378,25 +378,25 @@ RowManager = {
 	},
 	//delete managers
 	extractRow: function (order) {
-		console.log("f extractRow")
+		// console.log("f extractRow")
 		let indexes = order.split("_").splice(1)
-		console.log("indexes = ", indexes)
+		// console.log("indexes = ", indexes)
 		obj = this
-		console.log("length = ", indexes.length)
+		// console.log("length = ", indexes.length)
 		for (let i = 0; i < indexes.length; i++) {
-			console.log("	i = ",i)
+			// console.log("	i = ",i)
 			if (i === indexes.length-1) {
-				console.log("	IF i === indexes.length-1")
-				console.log("	obj.childrens = ", obj.childrens)
+				// console.log("	IF i === indexes.length-1")
+				// console.log("	obj.childrens = ", obj.childrens)
 				// console.log("	index for splice = ",+indexes[i]-1)
 				// this.redefinedRows = obj.childrens.slice(+indexes[i]) with childrens in one array
 				let redefinedList = obj.childrens.slice(+indexes[i])
-				console.log("	slice for redefine = ", redefinedList)
+				// console.log("	slice for redefine = ", redefinedList)
 				this.setredifinedRows(redefinedList)
-				console.log("	childrens After setredefined Rows  = ", obj.childrens)
+				// console.log("	childrens After setredefined Rows  = ", obj.childrens)
 				let objForDelete = obj.childrens.splice(+indexes[i]-1,1).pop()
 				// console.log("	>>array this.redefinedRows = " ,this.redefinedRows)
-				console.log("	>>objFordelete = ", objForDelete)
+				// console.log("	>>objFordelete = ", objForDelete)
 
 				this.deletedOrders.push(objForDelete.order)
 				if (objForDelete.childrens.length > 0) {
@@ -404,9 +404,9 @@ RowManager = {
 				}
 				return objForDelete
 			} else {
-				console.log("	ELSE i != indexes.length -1")
+				// console.log("	ELSE i != indexes.length -1")
 				obj = obj.childrens[+indexes[i]-1]
-				console.log("	>>ELSE obj = ", obj)
+				// console.log("	>>ELSE obj = ", obj)
 			}
 		}
 	return false
@@ -423,34 +423,78 @@ RowManager = {
 		}
 	},
 
-	redefineRowsOrdersGenerator: function* redefine() {
+	redefineRowsOrdersGenerator: function* (newOrderVal, newParentOrderVal, newLogic) {
+		//newOrderVal = deletedRow.order,
+		//newParentOrderVal = deletedRow.parentorder,
+		//newLogic = deletedRow.logicoperator
 		let index = 0
-		let length = this.redefinedRows.length
-		let parentOrderOfdeleteRow = this.deletedOrders[0].parentorder
-		let orderofDeleteRow = this.deletedOrders[0].order
-		//Array with all rows whch order and parent order are redefining
-		let RowParentOrd = this.redefinedRows[index].parentorder
-		let NewRowParentOrd = parentOrderOfdeleteRow
-		let RowOrderVal = this.redefinedRows[index].order
-		let NewRowOrderVal = orderofDeleteRow
-		let RowLogicVal = this.redefinedRows[index].logicoperator
-		let RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.name.toLowerCase() : this.scoretype
-		this.redefinedRows[index].order = NewRowOrderVal
-		this.redefinedRows[index].parentorder = NewRowParentOrd
-		while (index < length) {
-			console.log("\n>>>index = ",index)
-			yield [RowLogicVal, RowOrderVal, NewRowOrderVal, RowType];
+		let basicOrderlength = newOrderVal.length
+		//get value of Row logic and type
+		let RowLogicVal = newLogic
+		this.redefinedRows[index].logicoperator = newLogic
+		let RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.redefinedRows[index].name.toLowerCase() : this.scoretype
+		//get Row order and parent order val
+		let rowOrderVal = this.redefinedRows[index].order
+		let ParentOrderVal = this.redefinedRows[index].parentorder
+		//set vars new order and parentorder
+		//redefine new value for order and parent order for Row
+		this.redefinedRows[index].order = newOrderVal
+		this.redefinedRows[index].parentorder = newParentOrderVal
+		console.log("?????????????????????????????????????????????????????")
+		while (index < this.redefinedRows.length) {
+			console.log("OUTPUT for index >>>",index,RowLogicVal, rowOrderVal, newOrderVal, RowType)
+			yield [RowLogicVal, rowOrderVal, newOrderVal, RowType];
 			index++
-			let RowParentOrd = this.redefinedRows[index].parentorder
-			let RowOrderVal = this.redefinedRows[index].order
-			let RowLogicVal = this.redefinedRows[index].logicoperator
-			let RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.name.toLowerCase() : this.scoretype
-			// validate
-			let NewRowParentOrd = null
-			let NewRowOrderVal = null
-			// set
-			this.redefinedRows[index].order = NewRowOrderVal
-			this.redefinedRows[index].parentorder = NewRowParentOrd
+			if (this.redefinedRows[index] != undefined) {
+				//get logic and type Row
+				RowLogicVal = this.redefinedRows[index].logicoperator
+				RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.redefinedRows[index].name.toLowerCase() : this.redefinedRows[index].scoretype
+				// validate order and parentorder
+				if (this.redefinedRows[index].order.length === newOrderVal.length && this.redefinedRows[index].order.length === basicOrderlength) {
+					console.log("HERE ===")
+					//calculate and redefine parentorder
+					newParentOrderVal = newOrderVal
+					ParentOrderVal = this.redefinedRows[index].parentorder //maybe this we don't need
+					this.redefinedRows[index].parentorder = newParentOrderVal
+
+					//calculate and redefine order VARIANT 1
+					arrayOrder = this.redefinedRows[index].order.split("_")
+					console.log("	>>>arrayOrder = ", arrayOrder)
+					lastElem = +arrayOrder[arrayOrder.length-1]-1
+					arrayOrder[arrayOrder.length-1] = lastElem.toString()
+					console.log("	>>>NEW arrayOrder = ", arrayOrder)
+					newOrderVal = arrayOrder.join("_")
+					rowOrderVal = this.redefinedRows[index].order
+					console.log("	>>>rowOrderVal", rowOrderVal)
+					this.redefinedRows[index].order = newOrderVal
+				} else if (this.redefinedRows[index].order.length > newOrderVal.length) {
+					console.log("HERE >")
+					//calculate and redeine parentorder
+					newParentOrderVal = newOrderVal
+					ParentOrderVal = this.redefinedRows[index].parentorder //maybe this we don't need
+					this.redefinedRows[index].parentorder = newParentOrderVal
+
+					//calculate order
+					rowOrderVal = this.redefinedRows[index].order
+					arrayOrder = rowOrderVal.split("_")
+					lastElem = arrayOrder[arrayOrder.length-1]
+					newOrderVal = newOrderVal.concat("_",lastElem)
+					this.redefinedRows[index].order = newOrderVal
+				} else if (this.redefinedRows[index].order.length === newOrderVal.length && this.redefinedRows[index].order.length > basicOrderlength) {
+					//calculate and redefine order VARIANT 2
+					console.log("HERE === and >")
+					ParentOrderVal = this.redefinedRows[index].parentorder
+					newParentOrderVal = newOrderVal
+					this.redefinedRows[index].parentorder = newParentOrderVal
+
+					rowOrderVal = this.redefinedRows[index].order
+					arrayOrder = rowOrderVal.split("_")
+					lastElem = arrayOrder[arrayOrder.length-1]
+					rootOrder = newOrderVal.split("_").slice(0, arrayOrder.length-1)//cause not include last element
+					newOrderVal = rootOrder.join("_").concat("_", lastElem)
+					this.redefinedRows[index].order = newOrderVal
+				}
+			}
 		}
 	},
 
@@ -1089,13 +1133,13 @@ function deleteRow(order) {
 	//delete Row with childrens from Row Manager
 	let deletedObj = RowManager.extractRow(order)
 	let orderList  = RowManager.deletedOrders
-	console.log("\n\n----\ndeleteRow orderList = ", orderList)
+	// console.log("\n\n----\ndeleteRow orderList = ", orderList)
 
 	//DELETE ROW ONE BY ONE FROM LAYOUT
 	//delete Childrens and logicBlocks
 	for (order of orderList) {
-		console.log(">>>WE delete logic = ", LOGIC_ID+order)
-		console.log(">>>WE delete logic = ", ID_ROW+order)
+		// console.log(">>>WE delete logic = ", LOGIC_ID+order)
+		// console.log(">>>WE delete logic = ", ID_ROW+order)
 		//delete logicoperator block
 		let logicBlok = document.getElementById(LOGIC_ID+order)
 		//delete div with row by order
@@ -1104,32 +1148,30 @@ function deleteRow(order) {
 		divBlock.remove()
 	}
 	//REDEFINE ORDERS FOR LAYOUT AND ROWMANAGER
-	redefineOrders()
-	// order = "1"//for test
-	//set editable parent block
-	let parentOrder = deletedObj.parentorder
-	if (RowManager.redefinedRows.length === 0) {
-		setPropertyDisabledForRow(parentOrder, isDisabled=false)
-	}
-	if (RowManager.childrens.length > 0) {
-		setInitialAddForm()
-	} else {
-		manageAddFormByStateRow()
-	}
-	//set default RowManager params
-	RowManager.setDefaultValues()
+	redefineOrders(deletedObj)
+	// // order = "1"//for test
+	// //set editable parent block
+	// let parentOrder = deletedObj.parentorder
+	// if (RowManager.redefinedRows.length === 0) {
+	// 	setPropertyDisabledForRow(parentOrder, isDisabled=false)
+	// }
+	// if (RowManager.childrens.length > 0) {
+	// 	setInitialAddForm()
+	// } else {
+	// 	manageAddFormByStateRow()
+	// }
+	// //set default RowManager params
+	// RowManager.setDefaultValues()
 }
 
-function redefineOrders() {
+function redefineOrders(deletedRow) {
 	console.log("\n---+++redefineOrders+++---\n")
-	console.log("Rows for redefine = ", RowManager.redefinedRows)
-	let m = RowManager.redefineRowsOrdersGenerator()
-	let oldParent = ""
-	let newParent = ""
-	let oldOrd = ""
-	let newOrd = ""
+	console.log("\n\nRowManager.redefinedRows = ", RowManager.redefinedRows,"\n\n-----++++++-----")
+	// return 1
+	let m = RowManager.redefineRowsOrdersGenerator(deletedRow.order, deletedRow.parentorder, deletedRow.logicoperator)
 	for (let counter = 0; counter < RowManager.redefinedRows.length; counter++) {
-		[logicValue, oldOrd, newOrd, typeRowValue] = m.next().value
+		console.log("	redefineOrders counter = ",counter)
+		let [logicValue, oldOrd, newOrd, typeRowValue] = m.next().value
 		//redefine layout
 		redefineCurentRowWithNewOrder(logicValue, oldOrd, newOrd, typeRowValue)
 	}
@@ -1139,10 +1181,11 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 	//slice not includes last value === compair
 	let name = (typerow === "time") ? typerow : "score"
 	let typeSoreArray = Object.values(SCORE_COMPAIR_TYPE_OBJ).slice(0, 3)
-	console.log("name = ", name)
-	console.log("typeSoreArray = ", typeSoreArray)
+	// console.log("name = ", name)
+	// console.log("typeSoreArray = ", typeSoreArray)
 
 	//redefine logic block
+	console.log("get logic ID = ",LOGIC_ID + oldord)
 	let logic = document.getElementById(LOGIC_ID + oldord)
 	logic.setAttribute("name", logicVal + LOGIC_NAME + neword)
 	logic.id = LOGIC_ID + neword
@@ -1174,7 +1217,7 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 
 	//chenge order for differente Node
 	if (typerow === "time") {
-		console.log("SET TIME")
+		// console.log("SET TIME")
 		//match type
 		let labelMatchType = document.querySelector(`label[for=${TIME_ID_SELECT_STSTUS}${oldord}]`)
 		let selectTimeType = document.getElementById(`${TIME_ID_SELECT_STSTUS}${oldord}`)
@@ -1212,7 +1255,7 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 		compairsonSelect.name = compairsonSelect.name.replace(oldord, neword)
 		compairsonSelect.setAttribute("onchange", `onChangeScore('compair', '${neword}')`)
 		if (typerow == "compair") {
-			console.log("SET COMPAIR")
+			// console.log("SET COMPAIR")
 			let labelNode = null
 			let inputNode = null
 			//fora home and fora guest
@@ -1226,7 +1269,7 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 				inputNode.setAttribute("onchange", `onChangeScore('${typeOnChange}', '${neword}')`)
 			}
 		} else {
-			console.log("SET Total, Home, Guest")
+			// console.log("SET Total, Home, Guest")
 			// score
 			let labelScoreInput = document.querySelector(`label[for=${SCORE_ID_INPUT_SCORE}${oldord}]`)
 			let scoreInputNode = document.getElementById(`${SCORE_ID_INPUT_SCORE}${oldord}`)
