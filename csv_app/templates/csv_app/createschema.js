@@ -428,14 +428,18 @@ RowManager = {
 		//newParentOrderVal = deletedRow.parentorder,
 		//newLogic = deletedRow.logicoperator
 		let index = 0
-		let basicOrderlength = newOrderVal.length
+		let rootLength = newOrderVal.length
 		//get value of Row logic and type
 		let RowLogicVal = newLogic
+		//usually not need but if deleted order 1_1
+		//logic for 1_2 has to change to and
 		this.redefinedRows[index].logicoperator = newLogic
-		let RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.redefinedRows[index].name.toLowerCase() : this.scoretype
-		//get Row order and parent order val
+		let RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.redefinedRows[index].name.toLowerCase() : this.redefinedRows[index].scoretype
+
+		//get Row order and parentorder val
 		let rowOrderVal = this.redefinedRows[index].order
-		let ParentOrderVal = this.redefinedRows[index].parentorder
+		let rootValue = newOrderVal
+		let newRootParent = newOrderVal
 		//set vars new order and parentorder
 		//redefine new value for order and parent order for Row
 		this.redefinedRows[index].order = newOrderVal
@@ -445,55 +449,77 @@ RowManager = {
 			console.log("OUTPUT for index >>>",index,RowLogicVal, rowOrderVal, newOrderVal, RowType)
 			yield [RowLogicVal, rowOrderVal, newOrderVal, RowType];
 			index++
+			//really not need to check this, but its extra check
 			if (this.redefinedRows[index] != undefined) {
 				//get logic and type Row
 				RowLogicVal = this.redefinedRows[index].logicoperator
 				RowType = (this.redefinedRows[index].hasOwnProperty("timetype") === true) ? this.redefinedRows[index].name.toLowerCase() : this.redefinedRows[index].scoretype
-				// validate order and parentorder
-				if (this.redefinedRows[index].order.length === newOrderVal.length && this.redefinedRows[index].order.length === basicOrderlength) {
-					console.log("HERE ===")
-					//calculate and redefine parentorder
-					newParentOrderVal = newOrderVal
-					ParentOrderVal = this.redefinedRows[index].parentorder //maybe this we don't need
-					this.redefinedRows[index].parentorder = newParentOrderVal
-
-					//calculate and redefine order VARIANT 1
-					arrayOrder = this.redefinedRows[index].order.split("_")
-					console.log("	>>>arrayOrder = ", arrayOrder)
-					lastElem = +arrayOrder[arrayOrder.length-1]-1
-					arrayOrder[arrayOrder.length-1] = lastElem.toString()
-					console.log("	>>>NEW arrayOrder = ", arrayOrder)
-					newOrderVal = arrayOrder.join("_")
+				// set new root
+				if (this.redefinedRows[index].order.length === rootLength) {
+					//calculate new parentorder
+					this.redefinedRows[index].parentorder = newRootParent
+					//calculate new order and root
+					orderArray = this.redefinedRows[index].order.split("_")
+					//get and redefine last element
+					orderArray[orderArray.length-1] = orderArray[orderArray.length-1] - 1
+					newOrderVal = orderArray.join("_")
 					rowOrderVal = this.redefinedRows[index].order
-					console.log("	>>>rowOrderVal", rowOrderVal)
+					//set new value for root
+					rootValue = newOrderVal
+					//set new order value for Row obj
 					this.redefinedRows[index].order = newOrderVal
-				} else if (this.redefinedRows[index].order.length > newOrderVal.length) {
-					console.log("HERE >")
-					//calculate and redeine parentorder
-					newParentOrderVal = newOrderVal
-					ParentOrderVal = this.redefinedRows[index].parentorder //maybe this we don't need
-					this.redefinedRows[index].parentorder = newParentOrderVal
-
-					//calculate order
-					rowOrderVal = this.redefinedRows[index].order
-					arrayOrder = rowOrderVal.split("_")
-					lastElem = arrayOrder[arrayOrder.length-1]
-					newOrderVal = newOrderVal.concat("_",lastElem)
-					this.redefinedRows[index].order = newOrderVal
-				} else if (this.redefinedRows[index].order.length === newOrderVal.length && this.redefinedRows[index].order.length > basicOrderlength) {
-					//calculate and redefine order VARIANT 2
-					console.log("HERE === and >")
-					ParentOrderVal = this.redefinedRows[index].parentorder
-					newParentOrderVal = newOrderVal
-					this.redefinedRows[index].parentorder = newParentOrderVal
-
-					rowOrderVal = this.redefinedRows[index].order
-					arrayOrder = rowOrderVal.split("_")
-					lastElem = arrayOrder[arrayOrder.length-1]
-					rootOrder = newOrderVal.split("_").slice(0, arrayOrder.length-1)//cause not include last element
-					newOrderVal = rootOrder.join("_").concat("_", lastElem)
-					this.redefinedRows[index].order = newOrderVal
+					//set new RootParent
+					newRootParent = newOrderVal
+				} else {
+					//pass
 				}
+
+
+				// validate order and parentorder
+				// if (this.redefinedRows[index].order.length === newOrderVal.length && this.redefinedRows[index].order.length === basicOrderlength) {
+				// 	console.log("HERE ===")
+				// 	//calculate and redefine parentorder
+				// 	newParentOrderVal = newOrderVal
+				// 	ParentOrderVal = this.redefinedRows[index].parentorder //maybe this we don't need
+				// 	this.redefinedRows[index].parentorder = newParentOrderVal
+
+				// 	//calculate and redefine order VARIANT 1
+				// 	arrayOrder = this.redefinedRows[index].order.split("_")
+				// 	console.log("	>>>arrayOrder = ", arrayOrder)
+				// 	lastElem = +arrayOrder[arrayOrder.length-1]-1
+				// 	arrayOrder[arrayOrder.length-1] = lastElem.toString()
+				// 	console.log("	>>>NEW arrayOrder = ", arrayOrder)
+				// 	newOrderVal = arrayOrder.join("_")
+				// 	rowOrderVal = this.redefinedRows[index].order
+				// 	console.log("	>>>rowOrderVal", rowOrderVal)
+				// 	this.redefinedRows[index].order = newOrderVal
+				// } else if (this.redefinedRows[index].order.length > newOrderVal.length) {
+				// 	console.log("HERE >")
+				// 	//calculate and redeine parentorder
+				// 	newParentOrderVal = newOrderVal
+				// 	ParentOrderVal = this.redefinedRows[index].parentorder //maybe this we don't need
+				// 	this.redefinedRows[index].parentorder = newParentOrderVal
+
+				// 	//calculate order
+				// 	rowOrderVal = this.redefinedRows[index].order
+				// 	arrayOrder = rowOrderVal.split("_")
+				// 	lastElem = arrayOrder[arrayOrder.length-1]
+				// 	newOrderVal = newOrderVal.concat("_",lastElem)
+				// 	this.redefinedRows[index].order = newOrderVal
+				// } else if (this.redefinedRows[index].order.length === newOrderVal.length && this.redefinedRows[index].order.length > basicOrderlength) {
+				// 	//calculate and redefine order VARIANT 2
+				// 	console.log("HERE === and >")
+				// 	ParentOrderVal = this.redefinedRows[index].parentorder
+				// 	newParentOrderVal = newOrderVal
+				// 	this.redefinedRows[index].parentorder = newParentOrderVal
+
+				// 	rowOrderVal = this.redefinedRows[index].order
+				// 	arrayOrder = rowOrderVal.split("_")
+				// 	lastElem = arrayOrder[arrayOrder.length-1]
+				// 	rootOrder = newOrderVal.split("_").slice(0, arrayOrder.length-1)//cause not include last element
+				// 	newOrderVal = rootOrder.join("_").concat("_", lastElem)
+				// 	this.redefinedRows[index].order = newOrderVal
+				// }
 			}
 		}
 	},
@@ -1167,6 +1193,7 @@ function deleteRow(order) {
 function redefineOrders(deletedRow) {
 	console.log("\n---+++redefineOrders+++---\n")
 	console.log("\n\nRowManager.redefinedRows = ", RowManager.redefinedRows,"\n\n-----++++++-----")
+	console.log("\n\ndeletedRow = ", deletedRow,"\n\n-----++++++-----")
 	// return 1
 	let m = RowManager.redefineRowsOrdersGenerator(deletedRow.order, deletedRow.parentorder, deletedRow.logicoperator)
 	for (let counter = 0; counter < RowManager.redefinedRows.length; counter++) {
@@ -1185,10 +1212,15 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 	// console.log("typeSoreArray = ", typeSoreArray)
 
 	//redefine logic block
-	console.log("get logic ID = ",LOGIC_ID + oldord)
 	let logic = document.getElementById(LOGIC_ID + oldord)
-	logic.setAttribute("name", logicVal + LOGIC_NAME + neword)
-	logic.id = LOGIC_ID + neword
+	//change class and text for 1_1 Row, its has to be AND by default for firs row after STATE
+	if (neword === "1_1") {
+		logic.lastElementChild.lastElementChild.innerText = "AND"
+		logic.lastElementChild.lastElementChild.className = "alert alert-secondary col"
+	} else {
+		logic.setAttribute("name", logicVal + LOGIC_NAME + neword)
+		logic.id = LOGIC_ID + neword
+	}
 
 	//redefine Row
 	let divRow = document.getElementById(ID_ROW + oldord)
