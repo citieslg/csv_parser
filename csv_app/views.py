@@ -8,10 +8,10 @@ from .models import (
 from .forms import (
 	LoginForm,
 	DataSchemaForm,
-	TypescoreForm,
-	TypetimeForm,
-	TypestatusForm,
-	ColumnForm
+	# TypescoreForm,
+	# TypetimeForm,
+	# TypestatusForm,
+	# ColumnForm
 	)
 
 
@@ -45,27 +45,27 @@ def dataschemas(request):
 
 
 
-@login_required(login_url='/login/')
-def newschema(request, **kwargs):
-	print('*******')
-	print('newschema with request = ', request)
-	# print('request instance = ', request.__dict__)
-	# print('request form = ',request.form)
-	print('request method = ',request.method)
-	if request.method == 'POST':
-		for i in request.__dict__:
-			print('\n'+ i + ':')
-			print('val: \n', request.__dict__[i])
-		# print('	POST, data = ',request.POST)
-		form = DataSchemaForm(request.POST)
-		form1 = ColumnForm()
-		form2 = TypescoreForm()
-		form3 = TypetimeForm()
-		form4 = TypestatusForm()
-	else:
-		form = DataSchemaForm()
-		form1 = ColumnForm()
-		form2 = TypescoreForm()
-		form3 = TypetimeForm()
-		form4 = TypestatusForm()
-	return render(request, './csv_app/newschema.html',context={'form': form, 'form1': form1, 'form2': form2, 'form3': form3, 'form4': form4})
+# @login_required(login_url='/login/')
+# def newschema(request, **kwargs):
+# 	print('*******')
+# 	print('newschema with request = ', request)
+# 	# print('request instance = ', request.__dict__)
+# 	# print('request form = ',request.form)
+# 	print('request method = ',request.method)
+# 	if request.method == 'POST':
+# 		for i in request.__dict__:
+# 			print('\n'+ i + ':')
+# 			print('val: \n', request.__dict__[i])
+# 		# print('	POST, data = ',request.POST)
+# 		form = DataSchemaForm(request.POST)
+# 		form1 = ColumnForm()
+# 		form2 = TypescoreForm()
+# 		form3 = TypetimeForm()
+# 		form4 = TypestatusForm()
+# 	else:
+# 		form = DataSchemaForm()
+# 		form1 = ColumnForm()
+# 		form2 = TypescoreForm()
+# 		form3 = TypetimeForm()
+# 		form4 = TypestatusForm()
+# 	return render(request, './csv_app/newschema.html',context={'form': form, 'form1': form1, 'form2': form2, 'form3': form3, 'form4': form4})

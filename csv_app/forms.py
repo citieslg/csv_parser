@@ -63,11 +63,11 @@ class ColumnForm(ModelForm):
 
 
 
-class TypestatusForm(ModelForm):
+# class TypestatusForm(ModelForm):
 
-	class Meta:
-		model = Typestatus
-		fields = ['status']
+# 	class Meta:
+# 		model = Typestatus
+# 		fields = ['status']
 
 
 
