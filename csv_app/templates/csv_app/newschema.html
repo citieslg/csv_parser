@@ -1,55 +1,155 @@
-<html>
-<head>
-  <meta charset="utf-8">
-</head>
-<body>
-<form action="{% url 'newschema' %}" method="POST">
+{% extends './base.html' %}
+
+{% block title%}
+  <title>New schema</title>
+{% endblock %}
+
+
+{% block content %}
+  <!-- MAIN FORM -->
+<form action="" method="post" class="" style="margin-left: 10%; margin-right: 10%" name="submit_form">
   {% csrf_token %}
-  <button type="submit">Submit</button>
-  {{form.as_p}}
-  <hr>
-  <div id=2>{{form1}}</div>
-  <hr>
-  <div id=2>{{form2}}</div>
-  <hr>
-  <div id=2>{{form3}}</div>
-  <hr>
-  <div id=2>{{form4}}</div>
+  <!-- TITLE and SUBMIT -->
+  <div class="form-row">
+    <div class="form-group col-md-10 mb-0">
+        <h4>New Schema</h4>
+    </div>
+    <div class="form-group col-md-2 mb-0">
+      <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+    </div>
+  </div>
+  <!-- SCHEMA -->
+  <div class="form-row mb-4">
+    {% for field in form %}
+      <div class="form-group col-md-3 mb-0">
+      {% if form.errors and field.name == 'name' %}
+        {{form.errors.name}}
+      {% endif %}
+      {{field.label_tag}}
+      {{field}}
+      </div>
+      <div class="form-group col-md-9 mb-0">
+      </div>
+    {% endfor %}
+
+
+  </div>
+  <!-- SCHEMA COLUMNS -->
+  <div class="form-row">
+    <div class="form-group col-md-10 mb-0">
+      <h4>Schema columns</h4>
+    </div>
+  </div>
+
+
+  <!-- ROW STATE-->
+  <div class="form-row mt-2" name="row" id="row_1">
+    <div class="form-group col-md-2 mb-0">
+      <label for="id_state_1">Select from:</label>
+      <input type="text" name="name_state_1" value="" maxlength="100" required="" id="id_state_1" class="form-control" disabled>
+    </div>
+    <div class="form-group col-md-2 mb-0">
+      <label for="id_select_state_1">Status:</label>
+      <select name="name_select_state_1" class="form-control custom-select" onchange="manageAddFormByStateRow()" id="id_select_state_1">
+        <option value="a" selected="">all</option>
+        <option value="s">soon</option>
+        <option value="n">now</option>
+        <option value="f">finished</option>
+      </select>
+    </div>
+    <div class="form-group col-md-5 mb-0">
+    </div>
+    <div class="form-group col-md-2 mb-0">
+      <label for="1">Order:</label>
+      <input type="text" name="state_order_name_1" maxlength="20" required="" id="1" class="form-control" value="1" disabled>
+    </div>
+    <div class="form-group col-md-1 mb-0">
+      <div style="margin-top: 40px; margin-left: 5px;">
+        <a class="text-danger control mt-5" href="#" onclick="javascript:location.reload()">Delete</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-row mt-2" name="row" id="row_1">
+    <div class="form-group col-md-2 mb-0">
+      <label for="id_state_1_a">Select from:</label>
+      <input type="text" name="name_state_1_a" value="" maxlength="100" required="" id="id_state_1_a" class="form-control" disabled>
+    </div>
+    <div class="form-group col-md-2 mb-0">
+      <label for="id_select_state_1_a">Status:</label>
+      <select name="name_select_state_1_a" class="form-control custom-select" onchange="manageAddFormByStateRow()" id="id_select_state_1_a">
+        <option value="a" selected="">all</option>
+        <option value="s">soon</option>
+        <option value="n">now</option>
+        <option value="f">finished</option>
+      </select>
+    </div>
+    <div class="form-group col-md-5 mb-0">
+    </div>
+    <div class="form-group col-md-2 mb-0">
+      <label for="1_a">Order:</label>
+      <input type="text" name="state_order_name_1_a" maxlength="20" required="" id="1_a" class="form-control" value="1_a" disabled>
+    </div>
+    <div class="form-group col-md-1 mb-0">
+      <div style="margin-top: 40px; margin-left: 5px;">
+        <a class="text-danger control mt-5" href="#" onclick="javascript:location.reload()">Delete</a>
+      </div>
+    </div>
+  </div>
 
 </form>
-<button onclick="add_p()">Add row</button>
-<script type="text/javascript">
-  function add_p() {
-    // body...
-    let form = document.getElementsByTagName('form')
-    console.log(`hello world form = ${form}`)
-    console.log(`length form = ${form.length}`)
-    console.log(`item 0 form = ${form.item(0)}`)
-    // console.log(`hello world form = ${form}`)
-    let p = document.createElement('p')
-    p.innerHTML = '<label for="id_name">Name11:</label><input type="text" name="name1" value="None" maxlength="30" required="" id="id_name">'
-    console.log(`hello world p = ${p}`)
-    console.log(`attrs form ${form.item(0).length}`)
-    form.item(0).appendChild(p)
-    
-  }
-  function mypostdata() {
-    alert('we are in POST')
-    // body...
-    let xhr = new XMLHttpRequest();
-    let js = JSON.stringify(
-    {
-      name: "Vasya",
-      age: 222
-    }
-    );
-  xhr.open('POST', {% url "newschema" %})
-  xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-   xhr.send(js)
-  }
-</script>
-</body>
-</html>
+<hr>
 
+<!-- ADD ROW FORM -->
+<form style="margin-left: 10%; margin-right: 10%;" class="border border-success rounded p-3" name="addcolumnform">
+  <div class="form-row mt-2">
+    <div class="form-group col-md-2 mb-0">
+      <label for="id_add_name">Column name:</label>
+      <input type="text" name="add_name" value="Name will be generated" maxlength="100" id="id_add_name" class="form-control" disabled>
+    </div>
+    <div class="form-group col-md-1 mb-0">
+      <label for="id_add_select_type">Filter type:</label>
+      <select name="add_name_select_type" id="id_add_select_type" class="form-control custom-select" onchange="onChangeAddForm('state')">
+        <option value="time" selected="">by time</option>
+        <option value="score">by score</option>
+      </select>
+    </div>
+<!-- LOGICOPERATOR -->
+    <div class="form-group col-md-1 mb-0">
+      <label for="id_add_select_logic">Logicoperator:</label>
+      <select name="add_name_select_logic" id="id_add_select_logic" class="form-control custom-select" onchange="onChangeAddForm('logic')" disabled>
+        <option value="and" selected="">AND</option>
+        <option value="or">OR</option>
+      </select>
+    </div>
+    <!-- EMPTY DIV -->
+    <div class="form-group col-md-5 mb-0">
+    </div>
+<!-- ADD ORDER -->
+    <div class="form-group col-md-1 mb-0">
+        <div style="margin-top: 40px; margin-left: 5px;">
+          <p>Add to</p>
+        </div>
+    </div>
+<!-- SELECT ORDER -->
+    <div class="form-group col-md-2 mb-0">
+      <label for="id_add_order_select">Order:</label>
+      <select name="add_name_oreder_select" id="id_add_order_select" class="form-control custom-select is-valid" aria-describedby="id_add_order_selectFeedback" disabled required>
+        <option value="1" selected="">1</option>
+      </select>
+<!-- ERROR BLOCK -->
+      <div id="id_add_order_selectFeedback" class="invalid-feedback">
+        No orders ...
+      </div>
+    </div>
+  </div>
 
-
+  <div class="form-row mt-3">
+    <div class="form-group col-md-2 mb-0">
+      <button type = "button" onclick = "addNewRow()" class="btn btn-primary btn-lg" id="add_submit">Add column</button>
+    </div>
+  </div>
+</form>
+{% load static %}
+<script type="text/javascript" src="{% static 'csv_app/formcreator.js' %}"></script>
+{% endblock%}

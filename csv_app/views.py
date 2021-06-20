@@ -45,27 +45,36 @@ def dataschemas(request):
 
 
 
-# @login_required(login_url='/login/')
-# def newschema(request, **kwargs):
-# 	print('*******')
-# 	print('newschema with request = ', request)
-# 	# print('request instance = ', request.__dict__)
-# 	# print('request form = ',request.form)
-# 	print('request method = ',request.method)
-# 	if request.method == 'POST':
-# 		for i in request.__dict__:
-# 			print('\n'+ i + ':')
-# 			print('val: \n', request.__dict__[i])
-# 		# print('	POST, data = ',request.POST)
-# 		form = DataSchemaForm(request.POST)
-# 		form1 = ColumnForm()
-# 		form2 = TypescoreForm()
-# 		form3 = TypetimeForm()
-# 		form4 = TypestatusForm()
-# 	else:
-# 		form = DataSchemaForm()
-# 		form1 = ColumnForm()
-# 		form2 = TypescoreForm()
-# 		form3 = TypetimeForm()
-# 		form4 = TypestatusForm()
-# 	return render(request, './csv_app/newschema.html',context={'form': form, 'form1': form1, 'form2': form2, 'form3': form3, 'form4': form4})
+@login_required(login_url='/login/')
+def newschema(request, **kwargs):
+	print("f newschema")
+	if request.method == 'POST':
+		# request.POST._mutable = True
+		# a = request.POST.copy()
+		# print("A = ", a)
+		print("Data = ",request.POST)
+		# form = DataSchemaForm(request.POST)
+		# rows_dict = request.POST.dict()
+		# if form.is_valid():
+		# 	print("FORM is VALID")
+		# else:
+		# 	form.errors['name'].error_class += ' text-danger'
+	else:
+		print("GET")
+		# form = DataSchemaForm()
+	print("\n+++++++++++++++++++++++++")
+	# for i in request.__dict__.keys():
+	# 	print("Key",i)
+	# 	print("Value",request.__dict__[i])
+	# print("\n+++++++++++++++++++++++++")
+	request.GET._mutable = True
+	request.POST._mutable = True
+	# print(request.GET._)
+	# print("GET = ",request.get('data'))
+	return render(request, './csv_app/newschema.html')#,context={"form":form})
+
+
+def addingfields(request):
+	if request.method == 'POST':
+		print(request.POST)
+	return render(request, './csv_app/test.html')

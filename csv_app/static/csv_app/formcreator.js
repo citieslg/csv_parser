@@ -887,7 +887,6 @@ function onChangeTime(type, order) {
 
 function setPropertyDisabledForRow(order, isDisabled=true) {
 	//get div row and make disabled all input widgets
-	console.log("f setPropertyDisabledForRow order = ", order, "\n with isDisabled = ",isDisabled)
 	let rowDiv = document.getElementById(ID_ROW+order)
 	for (child of rowDiv.children) {
 		for (item of child.children) {
@@ -927,7 +926,6 @@ function isEditableDisabledOfNode(nodeName) {
 // help functions for onChangeScore
 ///////////////////////////////////////////////////////////////////////////////
 function createCompairsonBlockforScoreRow(order) {
-	console.log("f createCompairsonBlockforScoreRow with order", order)
 	////////////////////////////////////////////////////////////////////////
 	//edit old Dom elements for Guest Side: input + title in paragraph block
 	////////////////////////////////////////////////////////////////////////
@@ -995,7 +993,6 @@ function createCompairsonBlockforScoreRow(order) {
 }
 
 function createDefaultBlockforScoreRow(order) {
-	console.log("f createDefaultBlockforScoreRow with order", order)
 	////////////////////////////////////////////////////////////
 	//delete COMPAIR COLS: p-Home, labelHome, inputHome, p-Guest
 	//redefine inputGuest, labelGuest to Score
@@ -1031,7 +1028,6 @@ function createDefaultBlockforScoreRow(order) {
 // function to manage Score Row wodgets
 ///////////////////////////////////////////////////////////////////////////////
 function onChangeScore(type, order) {
-	console.log("f onChangeScore with order = ", order)
 	let name = ''
 	let scorename = document.getElementById(SCORE_ID+order)
 	let scoretype = document.getElementById(SCORE_ID_TYPE_SELECT+order)
@@ -1075,9 +1071,7 @@ function onChangeScore(type, order) {
 		}
 		//edit name
 	} else if (["forahome", "foraguest"].includes(type)) {
-		console.log(">>>>ERROR for ", SCORE_ID_COMPAIR_TYPE+order)
 		let compairVal = document.getElementById(SCORE_ID_COMPAIR_TYPE+order)
-		console.log(compairVal)
 
 		let homeForaVal = document.getElementById(SCORE_ID_INPUT_HOME+order).value
 		let guestForaVal = document.getElementById(SCORE_ID_INPUT_GUEST+order).value
@@ -1098,13 +1092,10 @@ function deleteRow(order) {
 	//delete Row with childrens from Row Manager
 	let deletedObj = RowManager.extractRow(order)
 	let orderList  = RowManager.deletedOrders
-	// console.log("\n\n----\ndeleteRow orderList = ", orderList)
 
 	//DELETE ROW ONE BY ONE FROM LAYOUT
 	//delete Childrens and logicBlocks
 	for (order of orderList) {
-		// console.log(">>>WE delete logic = ", LOGIC_ID+order)
-		// console.log(">>>WE delete logic = ", ID_ROW+order)
 		//delete logicoperator block
 		let logicBlok = document.getElementById(LOGIC_ID+order)
 		//delete div with row by order
@@ -1130,7 +1121,6 @@ function deleteRow(order) {
 }
 
 function redefineOrders(deletedRow) {
-	console.log("\n---+++redefineOrders+++---\n")
 	let m = RowManager.redefineRowsOrdersGenerator(deletedRow.order, deletedRow.parentorder, deletedRow.logicoperator)
 	for (let counter = 0; counter < RowManager.redefinedRows.length; counter++) {
 		let [logicValue, oldOrd, newOrd, typeRowValue] = m.next().value
@@ -1143,11 +1133,8 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 	//slice not includes last value === compair
 	let name = (typerow === "time") ? typerow : "score"
 	let typeSoreArray = Object.values(SCORE_COMPAIR_TYPE_OBJ).slice(0, 3)
-	// console.log("name = ", name)
-	// console.log("typeSoreArray = ", typeSoreArray)
 
 	//redefine logic block
-	console.log("f redefineCurentRowWithNewOrder for LOGIC = ", LOGIC_ID + oldord)
 	let logic = document.getElementById(LOGIC_ID + oldord)
 	//change class and text for 1_1 Row, its has to be AND by default for firs row after STATE
 	if (neword === "1_1") {
@@ -1171,7 +1158,6 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 	//order
 	let ordLabel = document.querySelector(`label[for="${oldord}"]`)
 	let inputOrd = document.getElementById(oldord)
-	// console.log(inputOrd)
 	ordLabel.htmlFor = neword
 	inputOrd.id = neword
 	inputOrd.name = name + "_order_" + neword
@@ -1184,7 +1170,6 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 
 	//chenge order for differente Node
 	if (typerow === "time") {
-		// console.log("SET TIME")
 		//match type
 		let labelMatchType = document.querySelector(`label[for=${TIME_ID_SELECT_STSTUS}${oldord}]`)
 		let selectTimeType = document.getElementById(`${TIME_ID_SELECT_STSTUS}${oldord}`)
@@ -1222,7 +1207,6 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 		compairsonSelect.name = compairsonSelect.name.replace(oldord, neword)
 		compairsonSelect.setAttribute("onchange", `onChangeScore('compair', '${neword}')`)
 		if (typerow == "compair") {
-			// console.log("SET COMPAIR")
 			let labelNode = null
 			let inputNode = null
 			//fora home and fora guest
@@ -1236,7 +1220,6 @@ function redefineCurentRowWithNewOrder(logicVal, oldord, neword, typerow) {
 				inputNode.setAttribute("onchange", `onChangeScore('${typeOnChange}', '${neword}')`)
 			}
 		} else {
-			// console.log("SET Total, Home, Guest")
 			// score
 			let labelScoreInput = document.querySelector(`label[for=${SCORE_ID_INPUT_SCORE}${oldord}]`)
 			let scoreInputNode = document.getElementById(`${SCORE_ID_INPUT_SCORE}${oldord}`)
@@ -1498,3 +1481,5 @@ function getKeyValByValueInObj(val, obj) {
 
 const range = (start, end, length = end-srart +1) =>
 	Array.from({ length }, (_,i) => start + i)
+
+window.onload = setDefaultState()

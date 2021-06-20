@@ -4,7 +4,7 @@ from django.contrib.auth import views
 from .views import (
 	Login,
 	dataschemas,
-	# newschema,
+	newschema, addingfields
 	# SchemaView,
 	)
 
@@ -14,7 +14,8 @@ urlpatterns = [
     path('login/', Login.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('dataschemas/', dataschemas, name='dataschemas'),
-    # path('newschema/', newschema, name='newschema'),
+    path('newschema/', newschema, name='newschema'),
+    path('testadd/', addingfields),
     # path('newschema/', SchemaView.as_view(), name='newschema'),
     # path('viewschema/<str:name>/', viewschema, name='viewschema'),
 

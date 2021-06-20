@@ -1,118 +1,19 @@
-<html><head>
-	<meta charset="utf-8">
-</head>
-<body>
-<form action="/newschema/" method="POST">
-	<input type="hidden" name="csrfmiddlewaretoken" value="W5q5yGCt7vIBa4e9KTi08LXLEh4NFjEL5q2CFW4LohaWh8it6sXgN1iQ0adubFu7">
+<form id="1" method="post">
+	{% csrf_token %}
 	<button type="submit">Submit</button>
-	<p><label for="id_string_cherecter">String cherecter:</label> <select name="string_cherecter" id="id_string_cherecter">
-	<option value="'" selected="">Single quotes</option>
+	<h1 name="hello">Hello World</h1>
+	<input name="a">
+	<input name="b">
 
-	<option value="&quot;">Double quates</option>
-
-	<option value="`">Back quotes</option>
-
-</select></p>
-<p><label for="id_column_separator">Column separator:</label> <select name="column_separator" id="id_column_separator">
-	<option value="," selected="">Comma</option>
-
-	<option value=";">Semicolon</option>
-
-</select></p>
-<p>
-	<label for="id_name">Name:</label>
-	<input type="text" name="name" value="None" maxlength="30" required="" id="id_name">
-</p>
-
-
-
-<hr>
-	<div id="column_1">
-		<label for="id_name">Name:</label>
-		<!-- attr name with order tree-->
-		<input type="text" name="name_1" value="column name" maxlength="100" required="" id="id_name">
-		<label for="id_order">Order:</label>
-		<input type="text" name="order_1" maxlength="20" required="" id="id_order">
-		<label for="id_logicoperator">Logicoperator:</label>
-		<select name="logicoperator_1" id="id_logicoperator">
-			<option value="" selected="">---------</option>
-			<option value="or">OR</option>
-			<option value="and">AND</option>
-		</select>
-	</div>
-
-<hr>
-	<div id="typescore_1">
-		<label for="id_score">Score:</label>
-		<select name="score_1" id="id_score">
-			<option value="a" selected="">total</option>
-			<option value="h">home</option>
-			<option value="g">guest</option>
-			<option value="c">compair</option>
-		</select>
-
-		<label for="id_comparison">Comparison:</label>
-		<!-- if compairson label value Valfirst = home, Validsecond = guest -->
-		<!-- if not compairson: Valuefirs = choice_score, Valsecond=empty -->
-		<select name="comparison_1" id="id_comparison">
-			<option value="==" selected="">==</option>
-			<option value="<=">&lt;=</option>
-			<option value=">=">&gt;=</option>
-			<option value=">">&gt;</option>
-			<option value="<">&lt;</option>
-		</select>
-		<label for="id_valfirst">Valfirst:</label>
-		<input type="number" name="valfirst" value="0" required="" id="id_valfirst">
-		<label for="id_valsecond">Valsecond:</label>
-		<input type="number" name="valsecond" value="0" required="" id="id_valsecond">
-	</div>
-<hr>
-	<div id="typetime">
-		<label for="id_match_status">Match status:</label>
-		<select name="match_status_1" id="id_match_status">
-			<option value="n" selected="">now</option>
-			<option value="t">time table</option>
-		</select>
-		<!-- if now value = minutes else date time -->
-		<label for="id_valfrom">Valfrom:</label>
-		<input type="text" name="valfrom_1" maxlength="7" required="" id="id_valfrom">
-		<label for="id_valto">Valto:</label>
-		<input type="text" name="valto" maxlength="7" required="" id="id_valto">
-	</div>
-<hr>
-	<div id="2">
-		<label for="id_status">Status:</label>
-		<select name="status_1" id="id_status">
-			<option value="a" selected="">all</option>
-			<option value="s">soon</option>
-			<option value="n">now</option>
-			<option value="f">finished</option>
-		</select>
-	</div>
 </form>
-
-<button onclick="add_p()">Add row</button>
+<button onclick="add()">ADD</button>
 <script type="text/javascript">
-	function add_p() {
-		// body...
-		let form = document.getElementsByTagName('form')
-		console.log(`hello world form = ${form}`)
-		console.log(`length form = ${form.length}`)
-		console.log(`item 0 form = ${form.item(0)}`)
-		// console.log(`hello world form = ${form}`)
-		let p = document.createElement('p')
-		p.innerHTML = '<label for="id_name">Name11:</label><input type="text" name="name1" value="None" maxlength="30" required="" id="id_name">'
-		console.log(`hello world p = ${p}`)
-		console.log(`attrs form ${form.item(0).length}`)
-		form.item(0).appendChild(p)
-		
+	let i = 0
+	function add() {
+		let form = document.getElementById('1')
+		let newfield = document.createElement('input')
+		newfield.name = i
+		form.appendChild(newfield)
+		i++
 	}
-
 </script>
-
-
-
-
-
-</body>
-</html>
