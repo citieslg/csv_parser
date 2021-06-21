@@ -53,25 +53,25 @@ def newschema(request, **kwargs):
 		# a = request.POST.copy()
 		# print("A = ", a)
 		print("Data = ",request.POST)
-		# form = DataSchemaForm(request.POST)
+		form = DataSchemaForm(request.POST)
 		# rows_dict = request.POST.dict()
-		# if form.is_valid():
-		# 	print("FORM is VALID")
-		# else:
-		# 	form.errors['name'].error_class += ' text-danger'
+		if form.is_valid():
+			print("FORM is VALID")
+		else:
+			form.errors['name'].error_class += ' text-danger'
 	else:
 		print("GET")
-		# form = DataSchemaForm()
+		form = DataSchemaForm()
 	print("\n+++++++++++++++++++++++++")
 	# for i in request.__dict__.keys():
 	# 	print("Key",i)
 	# 	print("Value",request.__dict__[i])
 	# print("\n+++++++++++++++++++++++++")
-	request.GET._mutable = True
-	request.POST._mutable = True
+	# request.GET._mutable = True
+	# request.POST._mutable = True
 	# print(request.GET._)
 	# print("GET = ",request.get('data'))
-	return render(request, './csv_app/newschema.html')#,context={"form":form})
+	return render(request, './csv_app/newschema.html',context={"form":form})
 
 
 def addingfields(request):

@@ -15,7 +15,7 @@
         <h4>New Schema</h4>
     </div>
     <div class="form-group col-md-2 mb-0">
-      <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+      <button type="submit" class="btn btn-primary btn-lg" onclick="alert('now set all disabled to enebled')">Submit</button>
     </div>
   </div>
   <!-- SCHEMA -->
@@ -69,34 +69,6 @@
       </div>
     </div>
   </div>
-
-  <div class="form-row mt-2" name="row" id="row_1">
-    <div class="form-group col-md-2 mb-0">
-      <label for="id_state_1_a">Select from:</label>
-      <input type="text" name="name_state_1_a" value="" maxlength="100" required="" id="id_state_1_a" class="form-control" disabled>
-    </div>
-    <div class="form-group col-md-2 mb-0">
-      <label for="id_select_state_1_a">Status:</label>
-      <select name="name_select_state_1_a" class="form-control custom-select" onchange="manageAddFormByStateRow()" id="id_select_state_1_a">
-        <option value="a" selected="">all</option>
-        <option value="s">soon</option>
-        <option value="n">now</option>
-        <option value="f">finished</option>
-      </select>
-    </div>
-    <div class="form-group col-md-5 mb-0">
-    </div>
-    <div class="form-group col-md-2 mb-0">
-      <label for="1_a">Order:</label>
-      <input type="text" name="state_order_name_1_a" maxlength="20" required="" id="1_a" class="form-control" value="1_a" disabled>
-    </div>
-    <div class="form-group col-md-1 mb-0">
-      <div style="margin-top: 40px; margin-left: 5px;">
-        <a class="text-danger control mt-5" href="#" onclick="javascript:location.reload()">Delete</a>
-      </div>
-    </div>
-  </div>
-
 </form>
 <hr>
 
