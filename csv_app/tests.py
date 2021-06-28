@@ -1,34 +1,44 @@
 from csv_app.models import *
-u1 = User.objects.first()
-u2 = User.objects.all()[1]
-# oneToOne relationship
-pu1 = u1.userprofile
-pu2 = u2.userprofile
-ds1u1 = Dataschema.objects.create(profile=u1.userprofile, name="Data1")
-ds1u2 = Dataschema.objects.create(profile=u2.userprofile, name="Data_1")
-ds2u2 = Dataschema.objects.create(profile=u2.userprofile, name="Data_2")
+def get_usrs():
+	upa = User.objects.first()
+	up1 = User.objects.all()[1]
+	return upa, up1
+def crdataschema(u, name):
+	return Dataschema.objects.create(profile=u.userprofile, name=name)
+	# create cols
+def typestatus():
+	return Typestatus.objects.create(matchestate='a')
 
-u1.userprofile.dataschemas.all()
-# OUTPUT <QuerySet [Data2, Data1]>
+def typetime(f,t):
+	return Typetime.objects.create(match_status='n', valfrom=f, valto=t)
 
-col1 = Column.objects.create(
-	content_type=ContentType.objects.get(
-		model=typstat.__class__.__name__.lower()
-		),
-	name="colWithTypeStat", 
-	dataschema=dt, 
-	order=1,
-	object_id=typstat.id
-	)
-print(col1)
-# OUTPUT <Column: colWithTypeStat>
-col2 = Column.objects.create(
-	content_type=ContentType.objects.get(
-		model=typscore.__class__.__name__.lower()
-		),
-	name="colWithSoreCholdren",
-	dataschema=dt,
-	order=1,
-	object_id=typscore.id,
-	parent=col1
-	)
+def typescore(t, c, v1,v2):
+	return Typescore.objects.create(score=t, comparison=c, valfirst=v1, valsecond=v2)
+
+def createcol(n, order, ds, co, child_col, parent = False):
+	ct = ContentType
+	if parent:
+		return Column.objects.create(logicoperator="and",
+								name=n,
+								order=order,
+								dataschema=ds,
+								content_object=co,
+								parent=parent
+								)
+	else:
+		return Column.objects.create(logicoperator="and",
+								name=n,
+								order=order,
+								dataschema=ds,
+								content_object=co,
+								)
+
+
+
+def deletall():
+	Dataschema.objects.all().delete()
+	Column.objects.all().delete()
+	Typetime.objects.all().delete()
+	Typestatus.objects.all().delete()
+	Typescore.objects.all().delete()
+

@@ -507,7 +507,7 @@ function addNewRow() {
 	//get new value for order
 	// let neworder = getNewOrder(orderValue)
 	//set not editable widgets for parent row
-	setPropertyDisabledForRow(orderValue, true)
+	// setPropertyDisabledForRow(orderValue, true)
 	//get last order in branch
 	lastOrderValue = RowManager.getLastOrder(orderValue)
 	let newrow = null
@@ -1110,7 +1110,8 @@ function deleteRow(order) {
 	// //set editable parent block
 	let parentOrder = deletedObj.parentorder
 	if (RowManager.redefinedRows.length === 0) {
-		setPropertyDisabledForRow(parentOrder, isDisabled=false)
+		//pass
+		// setPropertyDisabledForRow(parentOrder, isDisabled=false)
 	}
 	if (RowManager.childrens.length > 0) {
 		setInitialAddForm()

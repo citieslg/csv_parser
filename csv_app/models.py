@@ -142,7 +142,7 @@ class Column(models.Model):
 				model=instance.__class__.__name__.lower()
 				),
 			object_id = instance.id
-		super().save(args, kwargs)
+		super().save(*args, **kwargs)
 
 
 # like NoteBook, SmartFone
@@ -151,7 +151,7 @@ class Typestatus(models.Model):
 		('a', 'all'),
 		('s', 'soon'),
 		('n', 'now'),
-		('f', 'finished')
+		('f', 'finished') 
 		)
 	# redefine as a content type object
 	matchestate = models.CharField(
@@ -178,7 +178,7 @@ class Typetime(models.Model):
 
 class Typescore(models.Model):
 	TOTAL = (
-		('a', 'total'),
+		('t', 'total'),
 		('h', 'home'),
 		('g', 'guest'),
 		('c', 'compair')
@@ -200,34 +200,34 @@ class Typescore(models.Model):
 		default='==',
 		choices=COMPAIR
 		)
-	# from
+	# from if total, home, guest only valfirst is set
 	valfirst = models.IntegerField(default=0)
 	# to
 	valsecond = models.IntegerField(default=0)
 
 
 # ouput CSV file models and def-s
-def get_user_direct(instance):
-	'''
-	return PATH to CSVfile item
-	used in class CSVfile field upload
-	'''
-	return '{0}/{1}/{2}{3}'.format(
-			instance.dataschema.profile.user.slug,
-			instance.self.dataschema.name,
-			instance.date,
-			instance.formatfile
-			)
+# def get_user_direct(instance):
+# 	'''
+# 	return PATH to CSVfile item
+# 	used in class CSVfile field upload
+# 	'''
+# 	return '{0}/{1}/{2}{3}'.format(
+# 			instance.dataschema.profile.user.slug,
+# 			instance.self.dataschema.name,
+# 			instance.date,
+# 			instance.formatfile
+# 			)
 
 
-class CSVfile():
-	dataschema = models.ForeignKey(Dataschema, on_delete=models.CASCADE)
-	formatfile = models.CharField(max_length=4, default='.csv')
-	date = models.DateTimeField()
-	upload = models.FileField(upload_to=get_user_direct)
-	# is the CSV file was added to archive
-	# celery will check is file was added to archive before
-	# celery will check max lenth for every Datascheme and res of file
-	# will add to archive
-	isarchive = models.BooleanField(default=False)
-	archivename = models.CharField(max_length=150, default='No archive method. Celery test system')
+# class CSVfile():
+# 	dataschema = models.ForeignKey(Dataschema, on_delete=models.CASCADE)
+# 	formatfile = models.CharField(max_length=4, default='.csv')
+# 	date = models.DateTimeField()
+# 	upload = models.FileField(upload_to=get_user_direct)
+# 	# is the CSV file was added to archive
+# 	# celery will check is file was added to archive before
+# 	# celery will check max lenth for every Datascheme and res of file
+# 	# will add to archive
+# 	isarchive = models.BooleanField(default=False)
+# 	archivename = models.CharField(max_length=150, default='No archive method. Celery test system')
