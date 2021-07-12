@@ -1,6 +1,13 @@
-from django.shortcuts import render, HttpResponse, reverse, redirect, get_object_or_404
-from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
+from django.core.paginator import Paginator
+from django.shortcuts import (
+	render,
+	HttpResponse,
+	reverse,
+	redirect,
+	get_object_or_404,
+	)
 from .models import (
 	Userprofile,
 	Dataschema,
@@ -18,6 +25,13 @@ from .utils import get_filters_dict, save_filters
 
 
 # Create your views here.
+
+
+def paginator(queryset, item_on_page=2, request_page=1):
+	paginator = Paginator(queryset, item_on_page)
+	return paginator.get_page(request_page)
+
+
 class Login(LoginView):
 
 	template_name = './csv_app/login.html'
@@ -43,12 +57,15 @@ class Login(LoginView):
 def dataschemas(request):
 	try:
 		schemas = request.user.userprofile.dataschemas.all()
+		num_page = request.GET.get('page')
+		print("PAGE num = ", num_page)
+		page_obj = paginator(queryset=schemas, request_page=num_page)
 	except AttributeError as error:
 		print('No Data for the user ', error)
-		schemas = []
+		page_obj = []
 	return render(request, 
 				'./csv_app/dataschemas.html', 
-				context={'schemas': schemas})
+				context={'objects': page_obj})
 
 
 
@@ -91,11 +108,7 @@ def delete_schema(request,schema_id):
 	return render(request, 'csv_app/delete_schema.html', context={"schema": schema})
 	# have to create new template to confirm delete
 	# the def has to delete all csvfiles too
-	# one way to delete it
-	# https://www.geeksforgeeks.org/delete-view-function-based-views-django/
-	# other way
-	# https://stackoverflow.com/questions/40861518/delete-model-object-in-django-using-jquery-ajax
-	# https://stackoverflow.com/questions/55599924/django-delete-object-using-ajax-or-javascript-with-confirm
+
 
 
 @login_required(login_url='/login/')
@@ -107,3 +120,7 @@ def schema_info(request, schema_name):
 @login_required(login_url='/login/')
 def get_csv_files(request, schema_name):
 	return render(request, './csv_app/csvfiles.html')
+
+
+
+
