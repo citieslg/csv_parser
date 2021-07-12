@@ -28,9 +28,12 @@ DEBUG = True
 if DEBUG:
     ALLOWED_HOSTS = ['127.0.0.1', '*']
 else:
-    ALLOWED_HOSTS = []
-
-
+    ALLOWED_HOSTS = ['*']
+STATIC_DIR = os.path.join(BASE_DIR, "/csv_app/static")
+print(STATIC_DIR)
+STATICFILES_DIRS = [
+    STATIC_DIR,
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -123,7 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-print(STATIC_ROOT)
+
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = '/meida-scv/'

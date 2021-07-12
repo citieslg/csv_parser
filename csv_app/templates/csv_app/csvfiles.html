@@ -1,0 +1,42 @@
+{% extends './base.html' %}
+{% block title %}
+<title>files</title>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+	<h4 class=" text-info">csv files table for schema:</h4>
+<table class="table table-bordered ">
+  <thead class="table-secondary">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Created date</th>
+      <th scope="col">All events</th>
+      <th scope="col">Selected events</th>
+      <th scope="col" style="width: 20%">Download</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if schemas %}
+    {% for schema in schemas %}
+    <tr>
+      <th scope="row">{{ forloop.counter }}</th>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td><a href="#">Start filter</a><a class="ml-4 text-danger" href="">Csv file</a></td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr>
+      <th scope="row">No data</th>
+      <td>No data</td>
+      <td>No data</td>
+      <td>No data</td>
+      <td>No data</td>
+    </tr>
+    {% endif %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

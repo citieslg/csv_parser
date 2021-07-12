@@ -1,0 +1,38 @@
+{% extends './base.html' %}
+{% block title %}
+	<title>schema-info</title>
+	{% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static 'csv_app/info.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+	<h4 class="title"><a href="{% url 'get_csv_files' schema_name='haha' %}" class="position-relative">CSV files for the Scheam Name
+  <span id="count_files" class="position-absolute top-0 end-0 badge rounded-pill bg-danger text-white">
+    +99</span></a>
+	</h4>
+	<hr>
+<div class="container">
+	
+<div class="mb-3">
+	<h5>Variant 1</h5>
+	<div class="bs-callout">Filter from matches now from valfrom to valto</div>
+	<span class="ml-5 bg-light text-secondary">...next filter</span>
+	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
+	<span class="ml-5 bg-light text-secondary">...next filter</span>
+	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
+
+</div>
+
+<div class="mb-3">
+	<h5>Variant 1</h5>
+	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
+	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
+	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}

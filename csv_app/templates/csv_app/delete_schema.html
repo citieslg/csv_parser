@@ -1,0 +1,24 @@
+{% extends './base.html' %}
+
+{% block title%}
+  <title>Delete schema{{ schema.id }}</title>
+{% endblock %}
+
+{% block content %}
+<form id="del" method="POST" action="{% url 'delete_schema' schema_id=schema.id %}">
+  {% csrf_token %}
+<div class="container">
+<div class="card">
+  <div class="card-header bg-danger text-white">
+    Delete schema {{ schema.name }}
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Are you shure you want to delete the schema?</h5>
+    <p class="card-text">With a schema you will delete all attached files with data</p>
+    <a href="{% url 'dataschemas' %}" class="btn btn-success">Cancel</a>
+    <a href="#" class="btn btn-danger" onclick="document.getElementById('del').submit()">Delete</a>
+  </div>
+</div>
+</div>
+</form>
+{% endblock %}

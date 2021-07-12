@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse, reverse, redirect
+from django.shortcuts import render, HttpResponse, reverse, redirect, get_object_or_404
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from .models import (
@@ -82,8 +82,13 @@ def newschema(request, **kwargs):
 
 
 @login_required(login_url='/login/')
-def delete_schema(request,**kwargs):
-	pass
+def delete_schema(request,schema_id):
+	print("We are in the function", schema_id, type(schema_id))
+	schema = get_object_or_404(Dataschema, id=schema_id)
+	if request.method == 'POST':
+		print("POST!!!!")
+		return redirect('/dataschemas/')
+	return render(request, 'csv_app/delete_schema.html', context={"schema": schema})
 	# have to create new template to confirm delete
 	# the def has to delete all csvfiles too
 	# one way to delete it
@@ -91,3 +96,14 @@ def delete_schema(request,**kwargs):
 	# other way
 	# https://stackoverflow.com/questions/40861518/delete-model-object-in-django-using-jquery-ajax
 	# https://stackoverflow.com/questions/55599924/django-delete-object-using-ajax-or-javascript-with-confirm
+
+
+@login_required(login_url='/login/')
+def schema_info(request, schema_name):
+	# schema = get_object_or_404(Dataschema, id=kwargs.pop('schema_id'))
+	return render(request, './csv_app/schemainfo.html')
+
+
+@login_required(login_url='/login/')
+def get_csv_files(request, schema_name):
+	return render(request, './csv_app/csvfiles.html')

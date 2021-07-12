@@ -22,12 +22,12 @@
 <!-- TABLE -->
 <!-- <div class="row"> -->
 <table class="table table-bordered ">
-  <thead>
+  <thead class="table-secondary">
     <tr>
       <th scope="col">#</th>
       <th scope="col">Title</th>
       <th scope="col">Modefired</th>
-      <th scope="col">Action</th>
+      <th scope="col" style="width: 20%">Action</th>
     </tr>
   </thead>
   <tbody>
@@ -35,9 +35,9 @@
     {% for schema in schemas %}
     <tr>
       <th scope="row">{{ forloop.counter }}</th>
-      <td><a href="">{{ schema.name }}</a></td>
+      <td><a href="{% url 'schema_info' schema_name=schema.name %}">{{ schema.name }}</a></td>
       <td>{{ schema.modifired }}</td>
-      <td><a href="#">Edit scheme</a><a class="ml-4 text-danger" href="#">Delete</a></td>
+      <td><a href="#">Start filter</a><a class="ml-4 text-danger" href="{% url 'delete_schema' schema_id=schema.id %}">Delete</a></td>
     </tr>
     {% endfor %}
     {% else %}

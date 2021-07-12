@@ -5,7 +5,10 @@ from .views import (
 	Login,
 	dataschemas,
 	newschema,
-	# SchemaView,
+	delete_schema,
+	schema_info,
+	get_csv_files,
+	
 	)
 
 
@@ -15,6 +18,9 @@ urlpatterns = [
 	path('logout/', views.LogoutView.as_view(), name='logout'),
 	path('dataschemas/', dataschemas, name='dataschemas'),
 	path('newschema/', newschema, name='newschema'),
+	path('delete/<int:schema_id>/', delete_schema, name='delete_schema'),
+	path('schemainfo/<str:schema_name>/', schema_info, name='schema_info'),
+	path('csvfiles/<str:schema_name>/csv-files/', get_csv_files, name='get_csv_files')
 	# path('testadd/', addingfields),
 	# path('newschema/', SchemaView.as_view(), name='newschema'),
 	# path('viewschema/<str:name>/', viewschema, name='viewschema'),
