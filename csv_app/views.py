@@ -12,11 +12,12 @@ from .models import (
 	Userprofile,
 	Dataschema,
 	User,
+	Parser,
 	)
 from .forms import (
 	LoginForm,
 	DataSchemaForm,
-	# TypescoreForm,
+	# Parser,
 	# TypetimeForm,
 	# TypestatusForm,
 	# ColumnForm
@@ -24,7 +25,9 @@ from .forms import (
 from .utils import get_filters_dict, save_filters
 
 
-# Create your views here.
+import time
+import json
+
 
 
 def paginator(queryset, item_on_page=2, request_page=1):
@@ -32,6 +35,7 @@ def paginator(queryset, item_on_page=2, request_page=1):
 	return paginator.get_page(request_page)
 
 
+# Create your views here.
 class Login(LoginView):
 
 	template_name = './csv_app/login.html'
@@ -43,10 +47,8 @@ class Login(LoginView):
 					self.template_name,
 					context={'form': self.form_class})
 		if request.user.is_authenticated:
-			print('I am going redirect to dataschemas')
 			return redirect('/dataschemas/')
 		else:
-			print('try to loging enter username password')
 			return render(request, 
 						self.template_name, 
 						context={'form': self.form_class})
@@ -55,17 +57,29 @@ class Login(LoginView):
 
 @login_required(login_url='/login/')
 def dataschemas(request):
+	if request.method == 'POST':
+		print('AJAX = ',request.is_ajax())
+		body_unicode = request.body.decode('utf-8')
+		body = json.loads(body_unicode)
+		body_id = body['id']
+		# schema = get_object_or_404(Dataschema, id=body_id)
+		# obj = XMLfile.objects.create()
 	try:
 		schemas = request.user.userprofile.dataschemas.all()
 		num_page = request.GET.get('page')
-		print("PAGE num = ", num_page)
 		page_obj = paginator(queryset=schemas, request_page=num_page)
 	except AttributeError as error:
 		print('No Data for the user ', error)
 		page_obj = []
+	# xml_data = XMLfile.objects.first()
+	parser = Parser.objects.first()
 	return render(request, 
-				'./csv_app/dataschemas.html', 
-				context={'objects': page_obj})
+				'./csv_app/dataschemas.html',
+				context={
+					'objects': page_obj,
+					'parser': parser,
+					# 'xml_data_date': xml_data
+					})
 
 
 
@@ -112,9 +126,10 @@ def delete_schema(request,schema_id):
 
 
 @login_required(login_url='/login/')
-def schema_info(request, schema_name):
-	# schema = get_object_or_404(Dataschema, id=kwargs.pop('schema_id'))
-	return render(request, './csv_app/schemainfo.html')
+def schema_info(request, schema_id):
+	schema = get_object_or_404(Dataschema, id=schema_id)
+	filters_list = schema.get_columns()
+	return render(request, './csv_app/schemainfo.html', context={'filters': filters_list})
 
 
 @login_required(login_url='/login/')
@@ -124,3 +139,16 @@ def get_csv_files(request, schema_name):
 
 
 
+def ajax():
+	dataschema = get()
+	# if getnew already True layout countdown
+	dataschema.getnew = True
+	lastXML = XMLfile.objects.first()
+	lastCSV = get()
+	if lastCSV.date == lastXML.date:
+		send_to_celery_task()
+		return countdown
+	if lastCSV.date < lastXML.date:
+		createnewfileCSV()
+		# in a template update column with lastupdateCSV
+		return {"responce 200"}

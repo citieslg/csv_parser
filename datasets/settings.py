@@ -29,8 +29,9 @@ if DEBUG:
     ALLOWED_HOSTS = ['127.0.0.1', '*']
 else:
     ALLOWED_HOSTS = ['*']
+
 STATIC_DIR = os.path.join(BASE_DIR, "/csv_app/static")
-print(STATIC_DIR)
+
 STATICFILES_DIRS = [
     STATIC_DIR,
 ]
@@ -129,9 +130,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = '/meida-scv/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "meida-scv")
 
-MEDIA_URL = '/my-media/url/'
+MEDIA_URL = '/meida-scv/'
 
 AUTH_USER_MODEL = 'csv_app.User'
 

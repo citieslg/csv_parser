@@ -111,7 +111,7 @@ def save_filters(dict_request, user_name, name_schema):
 							dict_request.pop(f'{SCORE_INPUT_HOME}{str_order}')
 						val_second = \
 							dict_request.pop(f'{SCORE_INPUT_GUEST}{str_order}')
-						tail_score_name = 'score ' + val_first + score_compair +\
+						tail_score_name = ' home score ' + val_first + score_compair +\
 										' guest score ' + val_second
 					name = f'{SCORE_NAME_COMMON}{tail_score_name}'
 					# create Typescore onj
@@ -140,7 +140,6 @@ def save_filters(dict_request, user_name, name_schema):
 				order[-1] = order[-1] + 1
 		# check is list Empty
 		is_list_not_empty = True if len(saved_parent_order_list) > 1 else False
-
 
 
 

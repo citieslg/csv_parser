@@ -12,8 +12,8 @@
     <div class="col-3">
       <h4>Data Schemas</h4>
     </div>
-    <div class="col-7">
-      
+    <div class="col-7 text-center">
+      <p>Last parser update <strong>{{ parser.lastdate }}</strong></p>
     </div>
     <div class="col-2">
       <button class="btn btn-success" onclick="location.href='/newschema/'">New schema</button>
@@ -27,6 +27,7 @@
       <th scope="col">#</th>
       <th scope="col">Title</th>
       <th scope="col">Modefired</th>
+      <th scope="col">Last CSV</th>
       <th scope="col" style="width: 20%">Action</th>
     </tr>
   </thead>
@@ -35,14 +36,20 @@
     {% for schema in objects %}
     <tr>
       <th scope="row">{{ forloop.counter }}</th>
-      <td><a href="{% url 'schema_info' schema_name=schema.name %}">{{ schema.name }}</a></td>
+      <td><a href="{% url 'schema_info' schema_id=schema.id %}">{{ schema.name }}</a></td>
       <td>{{ schema.modifired }}</td>
-      <td><a href="#">Start filter</a><a class="ml-4 text-danger" href="{% url 'delete_schema' schema_id=schema.id %}">Delete</a></td>
+      <td>{{ schema.get_last_csv }}{{ schema.getnew }}</td>
+      {% if schema.getnew %}
+        <td><p id="demo" class="countown" style="margin: 0; padding: 0;">....</p></td>
+      {% else %}
+        <td><a href="#" onclick="haha('{{schema.id}}')" id="{{schema.id}}">Start filter</a><a class="ml-4 text-danger" href="{% url 'delete_schema' schema_id=schema.id %}">Delete</a></td>
+      {% endif %}
     </tr>
     {% endfor %}
     {% else %}
     <tr>
       <th scope="row">No data</th>
+      <td>No data</td>
       <td>No data</td>
       <td>No data</td>
       <td>No data</td>
@@ -52,4 +59,76 @@
 </table>
 </div>
 {% include './paginator.html' %}
+<script type="text/javascript">
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+function haha(s) {
+  alert("ahah"+s)
+
+  $.ajax({
+    type: 'POST',
+    url: "{% url 'dataschemas' %}",
+    data: `{"id":"${s}", "xml":"${parser}"}`,
+    headers: {
+           'X-CSRFToken': getCookie('csrftoken')
+         },
+  success: function (response) {
+    alert('Succes for ' + s)
+  },
+  error: function (response) {
+    alert('Fail');
+  }
+}
+)
+
+}
+
+
+
+// Set the date we're counting down to
+var countDownDate = new Date("Jul 14, 2021 23:05:00").getTime();
+
+// Update the count down every 1 second
+var x = setInterval(function() {
+
+  // Get today's date and time
+  var now = new Date().getTime();
+
+  // Find the distance between now and the count down date
+  var distance = countDownDate - now;
+
+  // Time calculations for days, hours, minutes and seconds
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  // Display the result in the element with id="demo"
+  document.getElementById("demo").innerHTML = days + "d " + hours + "h "
+  + minutes + "m " + seconds + "s ";
+
+
+  // If the count down is finished, write some text
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("demo").innerHTML = "EXPIRED";
+  }
+}, 1000);
+
+</script>
 {% endblock %}

@@ -1,9 +1,58 @@
+import os
 import uuid
+import datetime
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.conf import settings
 
+
+def create_user_dir(user_pk):
+	os.mkdir(os.path.join(settings.MEDIA_ROOT, str(user_pk)))
+
+def create_folder_for_schema(user_pk, schema_name):
+	os.mkdir(os.path.join(
+		settings.MEDIA_ROOT,
+		str(user_pk),
+		str(schema_name)
+		)
+	)
+
+def add_style_to_filters_name(name_val, order_val):
+	order_val = "{0}{1}{2}".format("<strong class='text-success'>",
+		order_val,
+		"</strong>")
+	new_name_val = ''
+	start = False
+	for leter in name_val:
+		if (leter.isdigit() or leter in ("<",">", "=")) and start == False:
+			new_name_val+="<strong class='text-danger'>" + leter
+			start = True
+		elif (leter.isdigit() == False and leter not in ("<",">", "=")) and start == True:
+			new_name_val+="</strong>" + leter
+			start = False
+		else:
+			new_name_val+=leter
+	# because lase is number in name of cols
+	new_name_val+="</strong>"
+	output = '{0} with order {1}'.format(new_name_val, order_val)
+	print(output)
+
+	return output
+
+# ouput CSV file models and def-s
+def get_file_path(instance):
+# 	'''
+# 	return PATH to CSVfile item
+# 	used in class CSVfile field upload
+# 	'''
+	return os.path.join(
+		settings.MEDIA_ROOT,
+		instance.dataschema.profile.user.pk,
+		instance.dataschema.id,
+		instance.created_date + '.csv'
+		)
 
 # Create your models here.
 class User(AbstractUser):
@@ -25,8 +74,8 @@ class User(AbstractUser):
 		if not getattr(self, 'userprofile', False):
 			print('Userprofile not crated lets do it')
 			Userprofile.objects.create(user=self)
-		# 	print('userprofile already exist')
-		# else:
+			create_user_dir(self.pk)
+
 
 
 class Userprofile(models.Model):
@@ -81,8 +130,17 @@ class Dataschema(models.Model):
 		choices=STRING_CHERECTER
 		)
 	modifired = models.DateTimeField(auto_now=True)
-	isnew = models.BooleanField(default=True)
-	# columns = models.ManyToManyField('Column', blank=True, related_name='related_dataschema')
+	getnew = models.BooleanField(default=False)
+	schema_folder = models.CharField(max_length=150,default='')
+
+	def get_last_csv(self):
+		try:
+			csv = self.csvfile_set.filter(dataschema=self).first()
+			csv = csv.created_date
+		except:
+			csv = "No data"
+		return csv
+
 
 	def __str__(self):
 		return self.name
@@ -90,11 +148,38 @@ class Dataschema(models.Model):
 	def __repr__(self):
 		return self.name
 
-	# def get_data_set_for_user(self, user):
-		# return self.objects.filter(owner=user)
+	def save(self,*args, **kwargs):
+		# create a folder for Schema
+		create_folder_for_schema(self.profile.user.pk, self.name)
+		self.schema_folder = '{}/{}'.format(self.profile.user.pk, self.name)
+		super().save(*args, **kwargs)
+
+	def get_coll_childrens(self, childrens, list_copy=[], counter=0):
+		for i in range(len(childrens)):
+			if len(childrens[i].children.all()) > 0:
+				list_copy.append(add_style_to_filters_name(childrens[i].name, childrens[i].order))
+				self.get_coll_childrens(childrens[i].children.all(), list_copy, counter+1)
+				list_copy = list_copy.copy()[:counter + 1]
+			else:
+				tail = list_copy.copy()
+				tail.append(add_style_to_filters_name(childrens[i].name, childrens[i].order))
+				self.list_columns.append(tail)
 
 
-# like Product
+	def get_columns(self):
+		self.list_columns = []
+		column = []
+		first = self.related_column.all().get(order=1)
+		print("First colummn name = ", first.name)
+		data = first.children.all()
+		column.append(first.name)
+		if len(data) > 0:
+			self.get_coll_childrens(data, column)
+		else:
+			self.list_columns = [column]
+		return self.list_columns
+
+
 class Column(models.Model):
 	LOGICAL_OPERATOR = (
 		('or', 'OR'),
@@ -206,28 +291,74 @@ class Typescore(models.Model):
 	valsecond = models.IntegerField(default=0)
 
 
-# ouput CSV file models and def-s
-# def get_user_direct(instance):
-# 	'''
-# 	return PATH to CSVfile item
-# 	used in class CSVfile field upload
-# 	'''
-# 	return '{0}/{1}/{2}{3}'.format(
-# 			instance.dataschema.profile.user.slug,
-# 			instance.self.dataschema.name,
-# 			instance.date,
-# 			instance.formatfile
-# 			)
+class XMLfile(models.Model):
+
+	@classmethod
+	def setIsnewFalse(cls):
+		obj = cls.objects.first()
+		print(type(obj))
+		if obj:
+			print("obj exists")
+			obj.isnew = False
+			super(XMLfile, obj).save()
+
+	class Meta:
+		ordering = ['-created_date']
+
+	created_date = models.DateTimeField(auto_now_add=True)
+	isnew = models.BooleanField(default=True)
+	total_events = models.IntegerField(default=0)
+	events_now = models.IntegerField(default=0)
+	events_finished = models.IntegerField(default=0)
+	future_events = models.IntegerField(default=0)
+
+	def __str__(self):
+		return str(self.created_date) + str(self.isnew)
+
+	def __repr__(self):
+		return str(self.created_date) + str(self.isnew)
+
+	def save(self, *args, **kwargs):
+		self.setIsnewFalse()
+		super().save(*args, **kwargs)
 
 
-# class CSVfile():
-# 	dataschema = models.ForeignKey(Dataschema, on_delete=models.CASCADE)
-# 	formatfile = models.CharField(max_length=4, default='.csv')
-# 	date = models.DateTimeField()
-# 	upload = models.FileField(upload_to=get_user_direct)
-# 	# is the CSV file was added to archive
-# 	# celery will check is file was added to archive before
-# 	# celery will check max lenth for every Datascheme and res of file
-# 	# will add to archive
-# 	isarchive = models.BooleanField(default=False)
-# 	archivename = models.CharField(max_length=150, default='No archive method. Celery test system')
+class CSVfile(models.Model):
+
+	@classmethod
+	def setIsnewFalse(cls, schema_id):
+		obj = cls.objects.filter(dataschema=schema_id).first()
+		if obj:
+			obj.isnew = False
+			super(CSVfile, obj).save()
+
+	class Meta:
+		ordering = ['-created_date']
+
+	created_date = models.DateTimeField(auto_now_add=True)
+	upload = models.FileField(upload_to=get_file_path)
+	total_events = models.IntegerField(default=0)
+	selected_evets = models.IntegerField(default=0)
+	dataschema = models.ForeignKey(Dataschema, on_delete=models.CASCADE)
+	xmlfile = models.ForeignKey(XMLfile, on_delete=models.CASCADE)
+
+	def __str__(self):
+		return str(self.created_date)
+
+
+	def __repr__(self):
+		return str(self.created_date)
+
+	# def save(self, *args, **kwargs):
+	# 	self.setIsnewFalse(kwargs.pop('schema_id'))
+	# 	super().save(*args, **kwargs)
+
+
+class Parser(models.Model):
+
+	lastdate = models.DateTimeField(blank=True, null=True)
+	nextdate = models.DateTimeField(blank=True, null=True)
+	interval = models.IntegerField(blank=True, null=True)
+	randomval = models.IntegerField(blank=True, null=True)
+
+

@@ -8,31 +8,33 @@
 {% block content %}
 
 <div class="container">
-	<h4 class="title"><a href="{% url 'get_csv_files' schema_name='haha' %}" class="position-relative">CSV files for the Scheam Name
-  <span id="count_files" class="position-absolute top-0 end-0 badge rounded-pill bg-danger text-white">
-    +99</span></a>
+	<h4 class="title">
+		<a href="{% url 'get_csv_files' schema_name='haha' %}" class="position-relative">
+			CSV files for the Scheam Name
+			<span id="count_files" class="position-absolute top-0 end-0 badge rounded-pill bg-danger text-white">
+				+99
+			</span>
+		</a>
 	</h4>
+</div>
 	<hr>
 <div class="container">
-	
-<div class="mb-3">
-	<h5>Variant 1</h5>
-	<div class="bs-callout">Filter from matches now from valfrom to valto</div>
-	<span class="ml-5 bg-light text-secondary">...next filter</span>
-	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
-	<span class="ml-5 bg-light text-secondary">...next filter</span>
-	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
+	{% for filter in filters %}
+			<h4 class="ml-5 mr-5 text-center bg-secondary rounded text-white">Variant {{ forloop.counter }}</h4>
+			<div class="mb-3 mt-3 border border-primary rounded">
+				{% for column in filter %}
+				<div class="bs-callout ml-3">{{ column|safe }}</div>
+				{% if forloop.counter < filter|length %}
+					<span class="ml-5 bg-light text-secondary">...next filter</span>
+				{% endif %}
+			{% endfor %}
+			</div>
+		{% endfor %}
+
 
 </div>
 
-<div class="mb-3">
-	<h5>Variant 1</h5>
-	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
-	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
-	<div class="bs-callout">..asasasasasasasassasasasasasasas.</div>
-</div>
+<div class="bs-callout ml-3">haahahaa <strong>ggggg</strong></div>
 
-</div>
-</div>
 
 {% endblock %}
